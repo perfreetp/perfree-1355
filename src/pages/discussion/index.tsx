@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { View, Text, ScrollView, Button, Image } from '@tarojs/components';
-import Taro from '@tarojs/taro';
+import Taro, { useDidShow } from '@tarojs/taro';
 import classNames from 'classnames';
 import styles from './index.module.scss';
-import { getCurrentPlan } from '@/data/reading-plans';
-import { getExcerptsByPlanId, getExcerptsByChapter } from '@/data/discussions';
-import { mockMembers } from '@/data/members';
+import { useAppStore } from '@/store';
 import ExcerptCard from '@/components/ExcerptCard';
 import Empty from '@/components/Empty';
 import { getExcerptTypeText } from '@/utils';
@@ -13,28 +11,39 @@ import type { ReadingPlan, Excerpt } from '@/types';
 
 type FilterType = 'all' | 'quote' | 'question' | 'thought';
 
-const currentUser = mockMembers[0];
-
 const DiscussionPage: React.FC = () => {
+  const store = useAppStore();
   const [currentPlan, setCurrentPlan] = useState<ReadingPlan | undefined>();
   const [filter, setFilter] = useState<FilterType>('all');
   const [selectedChapter, setSelectedChapter] = useState<number | null>(null);
   const [excerpts, setExcerpts] = useState<Excerpt[]>([]);
   const [myRating, setMyRating] = useState(0);
 
+  const currentUser = store.getCurrentUser();
+
+  useDidShow(() => {
+    loadData();
+  });
+
   useEffect(() => {
     loadData();
-  }, []);
+  }, [store.readingPlans, store.excerpts, store.ratings]);
 
   useEffect(() => {
     if (currentPlan) {
       loadExcerpts();
+      if (currentUser) {
+        setMyRating(store.getMyRating(currentPlan.bookId));
+      }
     }
   }, [currentPlan, filter, selectedChapter]);
 
   const loadData = () => {
-    const plan = getCurrentPlan();
+    const plan = store.getCurrentPlan();
     setCurrentPlan(plan);
+    if (plan && currentUser) {
+      setMyRating(store.getMyRating(plan.bookId));
+    }
     console.log('[Discussion] 加载数据完成', { plan });
   };
 
@@ -43,10 +52,12 @@ const DiscussionPage: React.FC = () => {
 
     let result: Excerpt[] = [];
 
+    const planExcerpts = store.getExcerptsByPlanId(currentPlan.id);
+
     if (selectedChapter !== null) {
-      result = getExcerptsByChapter(currentPlan.id, selectedChapter);
+      result = planExcerpts.filter(e => e.chapter === selectedChapter);
     } else {
-      result = getExcerptsByPlanId(currentPlan.id);
+      result = planExcerpts;
     }
 
     if (filter !== 'all') {
@@ -77,12 +88,14 @@ const DiscussionPage: React.FC = () => {
   };
 
   const handleRating = (rating: number) => {
+    if (!currentPlan) return;
+    store.rateBook(currentPlan.bookId, rating);
     setMyRating(rating);
     Taro.showToast({
       title: `已打${rating}星`,
       icon: 'success'
     });
-    console.log('[Discussion] 打分完成', { rating });
+    console.log('[Discussion] 打分完成', { rating, bookId: currentPlan.bookId });
   };
 
   const filterTabs: { key: FilterType; label: string }[] = [

@@ -1,45 +1,54 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, ScrollView, Button, Image } from '@tarojs/components';
-import Taro from '@tarojs/taro';
+import { View, Text, ScrollView, Button, Image, Picker } from '@tarojs/components';
+import Taro, { useDidShow } from '@tarojs/taro';
 import classNames from 'classnames';
 import styles from './index.module.scss';
-import { mockBorrowRecords, getStatusText, getBorrowRecordsByBorrowerId, getBorrowRecordsByOwnerId, getPendingBorrows } from '@/data/borrows';
-import { mockMembers } from '@/data/members';
+import { getStatusText } from '@/data/borrows';
+import { useAppStore } from '@/store';
 import Empty from '@/components/Empty';
 import { formatDate, formatDaysRemaining, getDaysRemaining } from '@/utils';
 import type { BorrowRecord } from '@/types';
 
-const currentUser = mockMembers[0];
-
 type TabType = 'borrowed' | 'lent' | 'pending';
 
 const BorrowPage: React.FC = () => {
+  const store = useAppStore();
   const [activeTab, setActiveTab] = useState<TabType>('borrowed');
   const [records, setRecords] = useState<BorrowRecord[]>([]);
   const [pendingCount, setPendingCount] = useState(0);
+  const [datePickerVisible, setDatePickerVisible] = useState<string | null>(null);
+  const [selectedDate, setSelectedDate] = useState('');
+
+  const currentUser = store.getCurrentUser();
+
+  useDidShow(() => {
+    loadRecords();
+    loadPendingCount();
+  });
 
   useEffect(() => {
     loadRecords();
-    const pending = getPendingBorrows().filter(
-      r => r.ownerId === currentUser.id || r.borrowerId === currentUser.id
-    );
-    setPendingCount(pending.length);
   }, [activeTab]);
 
+  const loadPendingCount = () => {
+    if (!currentUser) return;
+    const pending = store.getPendingBorrows(currentUser.id);
+    setPendingCount(pending.length);
+  };
+
   const loadRecords = () => {
+    if (!currentUser) return;
     let result: BorrowRecord[] = [];
 
     switch (activeTab) {
       case 'borrowed':
-        result = getBorrowRecordsByBorrowerId(currentUser.id);
+        result = store.getBorrowRecordsByBorrowerId(currentUser.id);
         break;
       case 'lent':
-        result = getBorrowRecordsByOwnerId(currentUser.id);
+        result = store.getBorrowRecordsByOwnerId(currentUser.id);
         break;
       case 'pending':
-        result = getPendingBorrows().filter(
-          r => r.ownerId === currentUser.id || r.borrowerId === currentUser.id
-        );
+        result = store.getPendingBorrows(currentUser.id);
         break;
     }
 
@@ -47,25 +56,36 @@ const BorrowPage: React.FC = () => {
     console.log('[Borrow] 加载借阅记录完成', { activeTab, count: result.length });
   };
 
+  const openDatePicker = (recordId: string) => {
+    setDatePickerVisible(recordId);
+    setSelectedDate(formatDate(new Date()));
+  };
+
+  const closeDatePicker = () => {
+    setDatePickerVisible(null);
+    setSelectedDate('');
+  };
+
   const handleApprove = (recordId: string) => {
-    setRecords(prev =>
-      prev.map(r =>
-        r.id === recordId ? { ...r, status: 'approved' as const } : r
-      )
-    );
+    openDatePicker(recordId);
+  };
+
+  const handleApproveConfirm = (recordId: string) => {
+    store.approveBorrow(recordId, selectedDate);
+    closeDatePicker();
+    loadRecords();
+    loadPendingCount();
     Taro.showToast({
       title: '已同意借阅',
       icon: 'success'
     });
-    console.log('[Borrow] 同意借阅', { recordId });
+    console.log('[Borrow] 同意借阅', { recordId, actualBorrowDate: selectedDate });
   };
 
   const handleReject = (recordId: string) => {
-    setRecords(prev =>
-      prev.map(r =>
-        r.id === recordId ? { ...r, status: 'rejected' as const } : r
-      )
-    );
+    store.rejectBorrow(recordId);
+    loadRecords();
+    loadPendingCount();
     Taro.showToast({
       title: '已拒绝',
       icon: 'none'
@@ -74,33 +94,33 @@ const BorrowPage: React.FC = () => {
   };
 
   const handleConfirmPickup = (recordId: string) => {
-    setRecords(prev =>
-      prev.map(r =>
-        r.id === recordId
-          ? { ...r, status: 'borrowed' as const, actualBorrowDate: new Date().toISOString().split('T')[0] }
-          : r
-      )
-    );
+    openDatePicker(recordId);
+  };
+
+  const handleConfirmPickupConfirm = (recordId: string) => {
+    store.confirmPickup(recordId, selectedDate);
+    closeDatePicker();
+    loadRecords();
     Taro.showToast({
       title: '已确认取书',
       icon: 'success'
     });
-    console.log('[Borrow] 确认取书', { recordId });
+    console.log('[Borrow] 确认取书', { recordId, actualBorrowDate: selectedDate });
   };
 
   const handleReturn = (recordId: string) => {
-    setRecords(prev =>
-      prev.map(r =>
-        r.id === recordId
-          ? { ...r, status: 'returned' as const, actualReturnDate: new Date().toISOString().split('T')[0] }
-          : r
-      )
-    );
+    openDatePicker(recordId);
+  };
+
+  const handleReturnConfirm = (recordId: string) => {
+    store.confirmReturn(recordId, selectedDate);
+    closeDatePicker();
+    loadRecords();
     Taro.showToast({
       title: '已确认归还',
       icon: 'success'
     });
-    console.log('[Borrow] 确认归还', { recordId });
+    console.log('[Borrow] 确认归还', { recordId, actualReturnDate: selectedDate });
   };
 
   const handleRemind = (recordId: string) => {
@@ -152,6 +172,16 @@ const BorrowPage: React.FC = () => {
   const showReminder = records.some(
     r => r.status === 'borrowed' && getDaysRemaining(r.expectedReturnDate) <= 3
   );
+
+  if (!currentUser) {
+    return (
+      <View className={styles.pageContainer}>
+        <View style={{ padding: 48, textAlign: 'center' }}>
+          <Text style={{ fontSize: 32, color: '#999' }}>加载中...</Text>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <ScrollView
@@ -341,6 +371,52 @@ const BorrowPage: React.FC = () => {
                   >
                     确认归还
                   </Button>
+                </View>
+              )}
+
+              {datePickerVisible === record.id && (
+                <View className={styles.datePickerSection}>
+                  <View className={styles.datePickerHeader}>
+                    <Text className={styles.datePickerTitle}>
+                      {record.status === 'pending' && '请选择实际交接日期'}
+                      {record.status === 'approved' && '请选择实际取书日期'}
+                      {record.status === 'borrowed' && '请选择实际归还日期'}
+                    </Text>
+                  </View>
+                  <Picker
+                    mode="date"
+                    value={selectedDate}
+                    start={formatDate(new Date(Date.now() - 30 * 86400000))}
+                    end={formatDate(new Date())}
+                    onChange={(e: any) => setSelectedDate(e.detail.value)}
+                  >
+                    <View className={styles.pickerInput}>
+                      <Text>{selectedDate}</Text>
+                      <Text className={styles.pickerIcon}>📅</Text>
+                    </View>
+                  </Picker>
+                  <View className={styles.datePickerActions}>
+                    <Button
+                      className={classNames(styles.actionBtn)}
+                      onClick={closeDatePicker}
+                    >
+                      取消
+                    </Button>
+                    <Button
+                      className={classNames(styles.actionBtn, styles.primary)}
+                      onClick={() => {
+                        if (record.status === 'pending') {
+                          handleApproveConfirm(record.id);
+                        } else if (record.status === 'approved') {
+                          handleConfirmPickupConfirm(record.id);
+                        } else if (record.status === 'borrowed') {
+                          handleReturnConfirm(record.id);
+                        }
+                      }}
+                    >
+                      确认
+                    </Button>
+                  </View>
                 </View>
               )}
             </View>

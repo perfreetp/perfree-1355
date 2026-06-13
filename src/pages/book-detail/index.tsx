@@ -1,35 +1,34 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { View, Text, Image, Button, ScrollView } from '@tarojs/components';
-import Taro, { useRouter } from '@tarojs/taro';
+import Taro, { useRouter, useDidShow } from '@tarojs/taro';
 import styles from './index.module.scss';
-import { getMemberBookById, mockMemberBooks, getBookById } from '@/data/books';
-import { getMemberById, mockMembers } from '@/data/members';
-import { getStatusColor, getStatusBgColor } from '@/utils';
+import { useAppStore } from '@/store';
 import type { MemberBook, Book } from '@/types';
-
-const currentUser = mockMembers[0];
 
 const BookDetailPage: React.FC = () => {
   const router = useRouter();
+  const store = useAppStore();
+  const currentUser = store.getCurrentUser();
   const [memberBook, setMemberBook] = useState<MemberBook | null>(null);
   const [book, setBook] = useState<Book | null>(null);
   const [myRating, setMyRating] = useState(0);
   const [otherCopies, setOtherCopies] = useState<MemberBook[]>([]);
 
-  useEffect(() => {
+  useDidShow(() => {
     const id = router.params.id;
     if (id) {
       loadBookDetail(id);
     }
-  }, [router.params.id]);
+  });
 
   const loadBookDetail = (id: string) => {
-    const mb = getMemberBookById(id);
+    const mb = store.getMemberBookById(id);
     if (mb) {
       setMemberBook(mb);
       setBook(mb.book);
+      setMyRating(store.getMyRating(mb.bookId));
 
-      const copies = mockMemberBooks.filter(
+      const copies = store.memberBooks.filter(
         item => item.bookId === mb.bookId && item.id !== id && item.isAvailable
       );
       setOtherCopies(copies);
@@ -39,7 +38,7 @@ const BookDetailPage: React.FC = () => {
   };
 
   const handleBorrow = () => {
-    if (!memberBook) return;
+    if (!memberBook || !currentUser) return;
     if (memberBook.memberId === currentUser.id) {
       Taro.showToast({ title: '这是你自己的书', icon: 'none' });
       return;
@@ -57,6 +56,8 @@ const BookDetailPage: React.FC = () => {
   };
 
   const handleRate = (rating: number) => {
+    if (!book) return;
+    store.rateBook(book.id, rating);
     setMyRating(rating);
     Taro.showToast({ title: `感谢您的${rating}星评价`, icon: 'success' });
     console.log('[BookDetail] 用户评分', { bookId: book?.id, rating });
@@ -252,11 +253,11 @@ const BookDetailPage: React.FC = () => {
           查看主人
         </Button>
         <Button
-          className={`${styles.actionButton} ${memberBook.isAvailable && memberBook.memberId !== currentUser.id ? styles.primaryButton : styles.disabledButton}`}
-          disabled={!memberBook.isAvailable || memberBook.memberId === currentUser.id}
+          className={`${styles.actionButton} ${memberBook.isAvailable && memberBook.memberId !== currentUser?.id ? styles.primaryButton : styles.disabledButton}`}
+          disabled={!memberBook.isAvailable || memberBook.memberId === currentUser?.id}
           onClick={handleBorrow}
         >
-          {memberBook.memberId === currentUser.id ? '这是我的书' : (memberBook.isAvailable ? '申请借阅' : '暂不可借')}
+          {memberBook.memberId === currentUser?.id ? '这是我的书' : (memberBook.isAvailable ? '申请借阅' : '暂不可借')}
         </Button>
       </View>
     </ScrollView>

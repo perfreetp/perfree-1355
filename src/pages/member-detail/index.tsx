@@ -1,42 +1,38 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { View, Text, Image, Button, ScrollView } from '@tarojs/components';
-import Taro, { useRouter } from '@tarojs/taro';
+import Taro, { useRouter, useDidShow } from '@tarojs/taro';
 import styles from './index.module.scss';
-import { getMemberById, mockMembers } from '@/data/members';
-import { getMemberBooksByMemberId } from '@/data/books';
-import { mockExcerpts } from '@/data/discussions';
-import { mockActivityReviews } from '@/data/activities';
+import { useAppStore } from '@/store';
 import type { Member, MemberBook, Excerpt, ActivityReview } from '@/types';
-
-const currentUser = mockMembers[0];
 
 const MemberDetailPage: React.FC = () => {
   const router = useRouter();
+  const store = useAppStore();
   const [member, setMember] = useState<Member | null>(null);
   const [activeTab, setActiveTab] = useState<'books' | 'activities' | 'excerpts'>('books');
   const [memberBooks, setMemberBooks] = useState<MemberBook[]>([]);
   const [memberExcerpts, setMemberExcerpts] = useState<Excerpt[]>([]);
   const [memberActivities, setMemberActivities] = useState<ActivityReview[]>([]);
 
-  useEffect(() => {
+  useDidShow(() => {
     const id = router.params.id;
     if (id) {
       loadMemberDetail(id);
     }
-  }, [router.params.id]);
+  });
 
   const loadMemberDetail = (memberId: string) => {
-    const m = getMemberById(memberId);
+    const m = store.getMemberById(memberId);
     if (m) {
       setMember(m);
 
-      const books = getMemberBooksByMemberId(memberId);
+      const books = store.getMemberBooksByMemberId(memberId);
       setMemberBooks(books);
 
-      const excerpts = mockExcerpts.filter(e => e.memberId === memberId);
+      const excerpts = store.getExcerptsByMemberId(memberId);
       setMemberExcerpts(excerpts);
 
-      const activities = mockActivityReviews.filter(a =>
+      const activities = store.activityReviews.filter(a =>
         a.completedMembers.some(cm => cm.id === memberId)
       );
       setMemberActivities(activities);
@@ -45,7 +41,8 @@ const MemberDetailPage: React.FC = () => {
     }
   };
 
-  const isSelf = member?.id === currentUser.id;
+  const currentUser = store.getCurrentUser();
+  const isSelf = member?.id === currentUser?.id;
 
   const handleBookClick = (memberBook: MemberBook) => {
     Taro.navigateTo({

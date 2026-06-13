@@ -1,34 +1,63 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { View, Text, ScrollView, Button, Image } from '@tarojs/components';
-import Taro from '@tarojs/taro';
+import Taro, { useDidShow } from '@tarojs/taro';
 import classNames from 'classnames';
 import styles from './index.module.scss';
-import { getActivityReviews, getMemberStatsList } from '@/data/activities';
-import { mockMembers } from '@/data/members';
+import { useAppStore } from '@/store';
 import Empty from '@/components/Empty';
 import { getMonthText } from '@/utils';
-import type { ActivityReview, MemberStats } from '@/types';
-
-const currentUser = mockMembers[0];
+import type { ActivityReview, MemberStats, Member } from '@/types';
 
 type TabType = 'activities' | 'ranking';
 
 const ReviewPage: React.FC = () => {
+  const store = useAppStore();
   const [activeTab, setActiveTab] = useState<TabType>('activities');
   const [activities, setActivities] = useState<ActivityReview[]>([]);
   const [memberStats, setMemberStats] = useState<MemberStats[]>([]);
 
-  useEffect(() => {
+  useDidShow(() => {
     loadData();
-  }, [activeTab]);
+  });
+
+  const computeMemberStats = (): MemberStats[] => {
+    const { members, activityReviews, excerpts, borrowRecords, readingPlans } = store;
+
+    return members.map((member: Member) => {
+      const completedBooks = activityReviews.filter(ar =>
+        ar.completedMembers.some(cm => cm.id === member.id)
+      ).length;
+
+      let totalParticipations = completedBooks;
+      readingPlans.forEach(plan => {
+        if (plan.participants.some(p => p.memberId === member.id)) {
+          totalParticipations++;
+        }
+      });
+
+      const totalExcerpts = excerpts.filter(e => e.memberId === member.id).length;
+      const totalBorrows = borrowRecords.filter(br => br.borrowerId === member.id).length;
+      const totalLents = borrowRecords.filter(br => br.ownerId === member.id).length;
+
+      return {
+        memberId: member.id,
+        member,
+        totalParticipations,
+        completedBooks,
+        totalExcerpts,
+        totalBorrows,
+        totalLents
+      };
+    }).sort((a, b) => b.totalParticipations - a.totalParticipations);
+  };
 
   const loadData = () => {
     if (activeTab === 'activities') {
-      const reviews = getActivityReviews();
+      const reviews = store.activityReviews;
       setActivities(reviews);
       console.log('[Review] 加载活动回顾完成', { count: reviews.length });
     } else {
-      const stats = getMemberStatsList();
+      const stats = computeMemberStats();
       setMemberStats(stats);
       console.log('[Review] 加载成员排行完成', { count: stats.length });
     }
@@ -53,7 +82,7 @@ const ReviewPage: React.FC = () => {
   const totalActivities = activities.length;
   const totalBooks = activities.length;
   const totalParticipants = activities.reduce((sum, a) => sum + a.totalParticipants, 0);
-  const totalMembers = mockMembers.length;
+  const totalMembers = store.members.length;
 
   return (
     <ScrollView
@@ -92,7 +121,10 @@ const ReviewPage: React.FC = () => {
           <Button
             key={tab.key}
             className={classNames(styles.tabItem, activeTab === tab.key && styles.active)}
-            onClick={() => setActiveTab(tab.key)}
+            onClick={() => {
+              setActiveTab(tab.key);
+              loadData();
+            }}
           >
             {tab.label}
           </Button>

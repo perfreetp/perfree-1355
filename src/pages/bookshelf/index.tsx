@@ -1,41 +1,42 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { View, Text, ScrollView, Button, Input, Image } from '@tarojs/components';
-import Taro from '@tarojs/taro';
+import Taro, { useDidShow } from '@tarojs/taro';
 import classNames from 'classnames';
 import styles from './index.module.scss';
-import { mockMemberBooks, getAvailableMemberBooks, getMemberBooksByMemberId } from '@/data/books';
-import { mockMembers } from '@/data/members';
+import { useAppStore } from '@/store';
 import BookCard from '@/components/BookCard';
 import Empty from '@/components/Empty';
 import type { MemberBook } from '@/types';
 
-const currentUser = mockMembers[0];
-
 type FilterType = 'all' | 'available' | 'mine';
 
 const BookshelfPage: React.FC = () => {
+  const store = useAppStore();
+  const currentUser = store.getCurrentUser();
   const [filter, setFilter] = useState<FilterType>('all');
   const [searchText, setSearchText] = useState('');
   const [selectedMember, setSelectedMember] = useState<string | null>(null);
   const [books, setBooks] = useState<MemberBook[]>([]);
   const [groupedBooks, setGroupedBooks] = useState<Record<string, MemberBook[]>>({});
 
-  useEffect(() => {
+  useDidShow(() => {
     loadBooks();
-  }, [filter, searchText, selectedMember]);
+  });
 
   const loadBooks = () => {
+    if (!currentUser) return;
+
     let result: MemberBook[] = [];
 
     switch (filter) {
       case 'available':
-        result = getAvailableMemberBooks();
+        result = store.getAvailableMemberBooks();
         break;
       case 'mine':
-        result = getMemberBooksByMemberId(currentUser.id);
+        result = store.getMemberBooksByMemberId(currentUser.id);
         break;
       default:
-        result = mockMemberBooks;
+        result = store.memberBooks;
     }
 
     if (selectedMember) {
@@ -88,7 +89,7 @@ const BookshelfPage: React.FC = () => {
     { key: 'mine', label: '我的藏书' }
   ];
 
-  const getMemberById = (id: string) => mockMembers.find(m => m.id === id);
+  const getMemberById = (id: string) => store.members.find(m => m.id === id);
 
   return (
     <ScrollView
@@ -102,7 +103,10 @@ const BookshelfPage: React.FC = () => {
           <Button
             key={tab.key}
             className={classNames(styles.filterTab, filter === tab.key && styles.active)}
-            onClick={() => setFilter(tab.key)}
+            onClick={() => {
+              setFilter(tab.key);
+              setTimeout(loadBooks, 0);
+            }}
           >
             {tab.label}
           </Button>
@@ -114,7 +118,10 @@ const BookshelfPage: React.FC = () => {
           className={styles.searchInput}
           placeholder="搜索书名或作者"
           value={searchText}
-          onInput={e => setSearchText(e.detail.value)}
+          onInput={e => {
+            setSearchText(e.detail.value);
+            setTimeout(loadBooks, 0);
+          }}
         />
       </View>
 
@@ -127,15 +134,21 @@ const BookshelfPage: React.FC = () => {
         >
           <Button
             className={classNames(styles.memberFilterItem, !selectedMember && styles.active)}
-            onClick={() => setSelectedMember(null)}
+            onClick={() => {
+              setSelectedMember(null);
+              setTimeout(loadBooks, 0);
+            }}
           >
             全部成员
           </Button>
-          {mockMembers.map(member => (
+          {store.members.map(member => (
             <Button
               key={member.id}
               className={classNames(styles.memberFilterItem, selectedMember === member.id && styles.active)}
-              onClick={() => handleMemberClick(member.id)}
+              onClick={() => {
+                handleMemberClick(member.id);
+                setTimeout(loadBooks, 0);
+              }}
             >
               {member.name}
             </Button>

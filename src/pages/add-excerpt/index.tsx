@@ -2,10 +2,7 @@ import React, { useState, useMemo, useEffect } from 'react';
 import { View, Text, Input, Image, Button, Textarea, ScrollView } from '@tarojs/components';
 import Taro, { useRouter } from '@tarojs/taro';
 import styles from './index.module.scss';
-import { mockReadingPlans, getCurrentPlan } from '@/data/reading-plans';
-import { mockMembers } from '@/data/members';
-
-const currentUser = mockMembers[0];
+import { useAppStore } from '@/store';
 
 const typeOptions: Array<{ value: 'quote' | 'question' | 'thought'; label: string; emoji: string; tip: string }> = [
   { value: 'quote', label: '书摘', emoji: '📝', tip: '引用书中的精彩段落' },
@@ -14,6 +11,7 @@ const typeOptions: Array<{ value: 'quote' | 'question' | 'thought'; label: strin
 ];
 
 const AddExcerptPage: React.FC = () => {
+  const store = useAppStore();
   const router = useRouter();
   const [planId, setPlanId] = useState('');
   const [type, setType] = useState<'quote' | 'question' | 'thought'>('quote');
@@ -22,9 +20,8 @@ const AddExcerptPage: React.FC = () => {
   const [content, setContent] = useState('');
   const [note, setNote] = useState('');
 
-  const currentPlan = useMemo(() => {
-    return getCurrentPlan() || mockReadingPlans[0];
-  }, []);
+  const currentUser = store.getCurrentUser();
+  const currentPlan = store.getCurrentPlan();
 
   useEffect(() => {
     const planIdFromRoute = router.params.planId;
@@ -40,8 +37,8 @@ const AddExcerptPage: React.FC = () => {
   }, [router.params, currentPlan]);
 
   const selectedPlan = useMemo(() => {
-    return mockReadingPlans.find(p => p.id === planId) || currentPlan;
-  }, [planId, currentPlan]);
+    return store.getPlanById(planId) || currentPlan;
+  }, [planId, currentPlan, store]);
 
   const quickChapters = useMemo(() => {
     if (!selectedPlan) return [];
@@ -53,7 +50,7 @@ const AddExcerptPage: React.FC = () => {
     return chapters;
   }, [selectedPlan]);
 
-  const canSubmit = chapter && content.trim();
+  const canSubmit = chapter && content.trim() && selectedPlan && currentUser;
 
   const handleQuickChapter = (ch: number) => {
     setChapter(String(ch));
@@ -64,20 +61,25 @@ const AddExcerptPage: React.FC = () => {
   };
 
   const handleSubmit = () => {
-    if (!canSubmit) return;
+    if (!canSubmit || !selectedPlan) return;
 
-    const excerptData = {
-      planId: selectedPlan?.id,
-      bookId: selectedPlan?.book.id,
-      memberId: currentUser.id,
+    store.addExcerpt({
+      planId: selectedPlan.id,
+      chapter: parseInt(chapter),
+      chapterTitle,
+      content,
+      type,
+      note
+    });
+
+    console.log('[AddExcerpt] 提交摘录', {
+      planId: selectedPlan.id,
       type,
       chapter: parseInt(chapter),
       chapterTitle,
       content,
       note
-    };
-
-    console.log('[AddExcerpt] 提交摘录', excerptData);
+    });
 
     Taro.showModal({
       title: '提交成功',

@@ -278,3 +278,40 @@
   color: $color-text-secondary;
   margin-left: $spacing-xs;
 }
+
+.datePickerSection {
+  margin-top: $spacing-md;
+  padding-top: $spacing-md;
+  border-top: 1rpx solid $color-divider;
+}
+
+.datePickerHeader {
+  margin-bottom: $spacing-sm;
+}
+
+.datePickerTitle {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+  color: $color-text-primary;
+}
+
+.pickerInput {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: $spacing-sm $spacing-md;
+  background: $color-bg-hover;
+  border-radius: $radius-sm;
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+}
+
+.pickerIcon {
+  font-size: $font-size-md;
+}
+
+.datePickerActions {
+  display: flex;
+  gap: $spacing-sm;
+  margin-top: $spacing-md;
+}

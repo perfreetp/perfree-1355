@@ -2,14 +2,11 @@ import React, { useState, useMemo } from 'react';
 import { View, Text, Input, Image, Button, Textarea, ScrollView } from '@tarojs/components';
 import Taro from '@tarojs/taro';
 import styles from './index.module.scss';
-import { mockBooks } from '@/data/books';
-import { mockMembers } from '@/data/members';
-import { formatDate } from '@/utils';
+import { useAppStore } from '@/store';
 import type { Book } from '@/types';
 
-const currentUser = mockMembers[0];
-
 const PublishBookPage: React.FC = () => {
+  const store = useAppStore();
   const [selectedBookId, setSelectedBookId] = useState<string>('');
   const [month, setMonth] = useState(() => {
     const now = new Date();
@@ -18,9 +15,12 @@ const PublishBookPage: React.FC = () => {
   const [description, setDescription] = useState('');
   const [searchText, setSearchText] = useState('');
 
+  const currentUser = store.getCurrentUser();
+  const mockBooks = store.books;
+
   const selectedBook = useMemo(() => {
     return mockBooks.find(b => b.id === selectedBookId);
-  }, [selectedBookId]);
+  }, [selectedBookId, mockBooks]);
 
   const filteredBooks = useMemo(() => {
     if (!searchText) return mockBooks;
@@ -28,7 +28,7 @@ const PublishBookPage: React.FC = () => {
     return mockBooks.filter(
       b => b.title.toLowerCase().includes(text) || b.author.toLowerCase().includes(text)
     );
-  }, [searchText]);
+  }, [searchText, mockBooks]);
 
   const months = useMemo(() => {
     const now = new Date();
@@ -46,16 +46,19 @@ const PublishBookPage: React.FC = () => {
 
   const handleSubmit = () => {
     if (!canSubmit) return;
-    if (!currentUser.isAdmin) {
+    if (!currentUser?.isAdmin) {
       Taro.showToast({ title: '仅管理员可发布', icon: 'none' });
       return;
     }
+
+    const newPlan = store.publishReadingPlan({ bookId: selectedBookId, month, description });
 
     console.log('[PublishBook] 发布共读书目', {
       bookId: selectedBookId,
       month,
       description,
-      adminId: currentUser.id
+      adminId: currentUser.id,
+      planId: newPlan.id
     });
 
     Taro.showModal({
@@ -83,7 +86,7 @@ const PublishBookPage: React.FC = () => {
       enhanced
       showScrollbar={false}
     >
-      {!currentUser.isAdmin ? (
+      {!currentUser?.isAdmin ? (
         <View className={styles.adminNotice}>
           <Text className={styles.noticeIcon}>🔒</Text>
           <Text className={styles.noticeText}>
@@ -196,7 +199,7 @@ const PublishBookPage: React.FC = () => {
         </>
       )}
 
-      {currentUser.isAdmin && (
+      {currentUser?.isAdmin && (
         <View className={styles.bottomActions}>
           <Button
             className={`${styles.submitButton} ${!canSubmit ? styles.disabledButton : ''}`}

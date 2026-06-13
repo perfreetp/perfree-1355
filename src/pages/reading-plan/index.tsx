@@ -7,17 +7,15 @@ import {
   Button,
   Input
 } from '@tarojs/components';
-import Taro from '@tarojs/taro';
+import Taro, { useDidShow } from '@tarojs/taro';
 import classNames from 'classnames';
 import styles from './index.module.scss';
-import { getCurrentPlan, getUpcomingPlans } from '@/data/reading-plans';
-import { mockMembers } from '@/data/members';
+import { useAppStore } from '@/store';
 import { getMonthText, getProgressPercent, formatDate } from '@/utils';
 import type { ReadingPlan, ReadingParticipant } from '@/types';
 
-const currentUser = mockMembers[0];
-
 const ReadingPlanPage: React.FC = () => {
+  const store = useAppStore();
   const [currentPlan, setCurrentPlan] = useState<ReadingPlan | undefined>();
   const [upcomingPlans, setUpcomingPlans] = useState<ReadingPlan[]>([]);
   const [isJoined, setIsJoined] = useState(false);
@@ -25,17 +23,23 @@ const ReadingPlanPage: React.FC = () => {
   const [currentChapter, setCurrentChapter] = useState('');
   const [myProgress, setMyProgress] = useState<ReadingParticipant | undefined>();
 
+  const currentUser = store.getCurrentUser();
+
+  useDidShow(() => {
+    loadData();
+  });
+
   useEffect(() => {
     loadData();
-  }, []);
+  }, [store.readingPlans]);
 
   const loadData = () => {
-    const plan = getCurrentPlan();
-    const upcoming = getUpcomingPlans();
+    const plan = store.getCurrentPlan();
+    const upcoming = store.getUpcomingPlans();
     setCurrentPlan(plan);
     setUpcomingPlans(upcoming);
 
-    if (plan) {
+    if (plan && currentUser) {
       const participant = plan.participants.find(p => p.memberId === currentUser.id);
       setIsJoined(!!participant);
       setMyProgress(participant);
@@ -43,42 +47,31 @@ const ReadingPlanPage: React.FC = () => {
         setCurrentChapter(String(participant.currentChapter));
       }
     }
-    console.log('[ReadingPlan] 加载数据完成', { plan, upcoming, isJoined: !!plan?.participants.find(p => p.memberId === currentUser.id) });
+    console.log('[ReadingPlan] 加载数据完成', { plan, upcoming, isJoined: !!plan?.participants.find(p => p.memberId === currentUser?.id) });
   };
 
   const handleJoin = () => {
-    if (!currentPlan) return;
+    if (!currentPlan || !currentUser) return;
 
-    const newParticipant: ReadingParticipant = {
-      id: `rp${Date.now()}`,
-      planId: currentPlan.id,
-      memberId: currentUser.id,
-      member: currentUser,
-      joinedAt: new Date().toISOString().split('T')[0],
-      currentChapter: 0,
-      lastReadAt: '',
-      status: 'reading'
-    };
+    const newParticipant = store.joinReadingPlan(currentPlan.id);
 
-    const updatedPlan = {
-      ...currentPlan,
-      participants: [...currentPlan.participants, newParticipant]
-    };
+    if (newParticipant) {
+      const updatedPlan = store.getCurrentPlan();
+      setCurrentPlan(updatedPlan);
+      setIsJoined(true);
+      setMyProgress(newParticipant);
+      setCurrentChapter('0');
 
-    setCurrentPlan(updatedPlan);
-    setIsJoined(true);
-    setMyProgress(newParticipant);
-    setCurrentChapter('0');
-
-    Taro.showToast({
-      title: '报名成功',
-      icon: 'success'
-    });
-    console.log('[ReadingPlan] 报名成功', { planId: currentPlan.id, member: currentUser.name });
+      Taro.showToast({
+        title: '报名成功',
+        icon: 'success'
+      });
+      console.log('[ReadingPlan] 报名成功', { planId: currentPlan.id, member: currentUser.name });
+    }
   };
 
   const handleUpdateProgress = () => {
-    if (!currentPlan || !myProgress) return;
+    if (!currentPlan || !myProgress || !currentUser) return;
 
     const chapter = parseInt(currentChapter) || 0;
     if (chapter < 0 || chapter > currentPlan.book.totalChapters) {
@@ -89,28 +82,23 @@ const ReadingPlanPage: React.FC = () => {
       return;
     }
 
-    const updatedParticipant = {
-      ...myProgress,
-      currentChapter: chapter,
-      lastReadAt: new Date().toISOString().split('T')[0]
-    };
-
-    const updatedParticipants = currentPlan.participants.map(p =>
-      p.memberId === currentUser.id ? updatedParticipant : p
-    );
-
-    setCurrentPlan({
-      ...currentPlan,
-      participants: updatedParticipants
+    const updatedParticipant = store.updateReadingProgress({
+      planId: currentPlan.id,
+      currentChapter: chapter
     });
-    setMyProgress(updatedParticipant);
-    setShowProgressModal(false);
 
-    Taro.showToast({
-      title: '进度已更新',
-      icon: 'success'
-    });
-    console.log('[ReadingPlan] 阅读进度更新', { chapter, book: currentPlan.book.title });
+    if (updatedParticipant) {
+      const updatedPlan = store.getCurrentPlan();
+      setCurrentPlan(updatedPlan);
+      setMyProgress(updatedParticipant);
+      setShowProgressModal(false);
+
+      Taro.showToast({
+        title: '进度已更新',
+        icon: 'success'
+      });
+      console.log('[ReadingPlan] 阅读进度更新', { chapter, book: currentPlan.book.title });
+    }
   };
 
   const handlePublish = () => {
@@ -282,7 +270,7 @@ const ReadingPlanPage: React.FC = () => {
           </View>
         )}
 
-        {currentUser.isAdmin && (
+        {currentUser?.isAdmin && (
           <View className={styles.adminSection}>
             <Button className={styles.publishButton} onClick={handlePublish}>
               + 发布下月共读书籍

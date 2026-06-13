@@ -2,11 +2,8 @@ import React, { useState, useMemo } from 'react';
 import { View, Text, Input, Image, Button, Textarea, ScrollView } from '@tarojs/components';
 import Taro from '@tarojs/taro';
 import styles from './index.module.scss';
-import { mockBooks } from '@/data/books';
-import { mockMembers } from '@/data/members';
+import { useAppStore } from '@/store';
 import type { Book } from '@/types';
-
-const currentUser = mockMembers[0];
 
 const conditionOptions = [
   { value: 'new', label: '全新', emoji: '✨' },
@@ -16,6 +13,8 @@ const conditionOptions = [
 ];
 
 const AddBookPage: React.FC = () => {
+  const store = useAppStore();
+  const currentUser = store.getCurrentUser();
   const [mode, setMode] = useState<'search' | 'manual'>('search');
   const [searchText, setSearchText] = useState('');
   const [selectedBook, setSelectedBook] = useState<Book | null>(null);
@@ -33,10 +32,10 @@ const AddBookPage: React.FC = () => {
   const searchResults = useMemo(() => {
     if (!searchText || searchText.length < 1) return [];
     const text = searchText.toLowerCase();
-    return mockBooks.filter(
+    return store.books.filter(
       b => b.title.toLowerCase().includes(text) || b.author.toLowerCase().includes(text)
     );
-  }, [searchText]);
+  }, [searchText, store.books]);
 
   const canSubmit = useMemo(() => {
     if (selectedBook) {
@@ -64,24 +63,32 @@ const AddBookPage: React.FC = () => {
   };
 
   const handleSubmit = () => {
-    if (!canSubmit) return;
+    if (!canSubmit || !currentUser) return;
 
-    const bookData = {
-      title,
-      author,
-      isbn,
-      totalChapters: parseInt(totalChapters) || 0,
-      category,
-      description,
-      condition,
-      isAvailable,
-      note,
-      memberId: currentUser.id,
-      isFromLibrary: !!selectedBook,
-      existingBookId: selectedBook?.id
-    };
+    if (selectedBook) {
+      store.addMemberBook({
+        bookId: selectedBook.id,
+        condition: condition as 'new' | 'good' | 'fair' | 'poor',
+        isAvailable,
+        note
+      });
+    } else {
+      store.addMemberBook({
+        bookData: {
+          title,
+          author,
+          isbn,
+          totalChapters: parseInt(totalChapters) || 0,
+          category,
+          description
+        },
+        condition: condition as 'new' | 'good' | 'fair' | 'poor',
+        isAvailable,
+        note
+      });
+    }
 
-    console.log('[AddBook] 添加藏书', bookData);
+    console.log('[AddBook] 添加藏书', { title, author });
 
     Taro.showModal({
       title: '添加成功',

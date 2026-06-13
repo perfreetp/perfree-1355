@@ -2,14 +2,12 @@ import React, { useState, useEffect, useMemo } from 'react';
 import { View, Text, Image, Button, Textarea, ScrollView, Picker } from '@tarojs/components';
 import Taro, { useRouter } from '@tarojs/taro';
 import styles from './index.module.scss';
-import { getMemberBookById } from '@/data/books';
-import { mockMembers } from '@/data/members';
+import { useAppStore } from '@/store';
 import { formatDate } from '@/utils';
 import type { MemberBook } from '@/types';
 
-const currentUser = mockMembers[0];
-
 const BorrowApplyPage: React.FC = () => {
+  const store = useAppStore();
   const router = useRouter();
   const [memberBook, setMemberBook] = useState<MemberBook | null>(null);
   const [borrowDays, setBorrowDays] = useState(30);
@@ -17,16 +15,18 @@ const BorrowApplyPage: React.FC = () => {
   const [note, setNote] = useState('');
   const [useCustomDate, setUseCustomDate] = useState(false);
 
+  const currentUser = store.getCurrentUser();
+
   useEffect(() => {
     const memberBookId = router.params.memberBookId;
     if (memberBookId) {
-      const mb = getMemberBookById(memberBookId);
+      const mb = store.getMemberBookById(memberBookId);
       if (mb) {
         setMemberBook(mb);
         console.log('[BorrowApply] 加载借阅书籍', { bookId: mb.bookId, title: mb.book.title });
       }
     }
-  }, [router.params.memberBookId]);
+  }, [router.params.memberBookId, store]);
 
   const quickDateOptions = useMemo(() => [
     { days: 7, label: '一周' },
@@ -42,7 +42,7 @@ const BorrowApplyPage: React.FC = () => {
     return formatDate(date);
   }, [borrowDays, expectedReturnDate]);
 
-  const canSubmit = memberBook && calculatedReturnDate;
+  const canSubmit = memberBook && calculatedReturnDate && currentUser;
 
   const getConditionText = (condition: string) => {
     const map: Record<string, string> = {
@@ -66,18 +66,19 @@ const BorrowApplyPage: React.FC = () => {
   };
 
   const handleSubmit = () => {
-    if (!canSubmit || !memberBook) return;
+    if (!canSubmit || !memberBook || !currentUser) return;
 
-    const borrowData = {
+    store.applyBorrow({
       memberBookId: memberBook.id,
-      borrowerId: currentUser.id,
-      ownerId: memberBook.memberId,
-      borrowDays: useCustomDate ? undefined : borrowDays,
       expectedReturnDate: calculatedReturnDate,
       note
-    };
+    });
 
-    console.log('[BorrowApply] 提交借阅申请', borrowData);
+    console.log('[BorrowApply] 提交借阅申请', {
+      memberBookId: memberBook.id,
+      expectedReturnDate: calculatedReturnDate,
+      note
+    });
 
     Taro.showModal({
       title: '申请已提交',
