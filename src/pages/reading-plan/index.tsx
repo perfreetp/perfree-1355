@@ -22,6 +22,7 @@ const ReadingPlanPage: React.FC = () => {
   const [showProgressModal, setShowProgressModal] = useState(false);
   const [currentChapter, setCurrentChapter] = useState('');
   const [myProgress, setMyProgress] = useState<ReadingParticipant | undefined>();
+  const [completedCount, setCompletedCount] = useState(0);
 
   const currentUser = store.getCurrentUser();
 
@@ -46,6 +47,8 @@ const ReadingPlanPage: React.FC = () => {
       if (participant) {
         setCurrentChapter(String(participant.currentChapter));
       }
+      const completed = plan.participants.filter(p => p.currentChapter >= plan.book.totalChapters).length;
+      setCompletedCount(completed);
     }
     console.log('[ReadingPlan] 加载数据完成', { plan, upcoming, isJoined: !!plan?.participants.find(p => p.memberId === currentUser?.id) });
   };
@@ -163,7 +166,7 @@ const ReadingPlanPage: React.FC = () => {
               进行中
             </View>
             <Text className={styles.participantCount}>
-              {currentPlan.participants.length}人参与
+              {currentPlan.participants.length}人参与 · {completedCount}人已完成
             </Text>
           </View>
 
@@ -210,36 +213,42 @@ const ReadingPlanPage: React.FC = () => {
             </Text>
           </View>
           <View className={styles.participantsList}>
-            {currentPlan.participants.map(participant => (
-              <View key={participant.id} className={styles.participantItem}>
-                <Image
-                  src={participant.member.avatar}
-                  className={styles.participantAvatar}
-                />
-                <View className={styles.participantInfo}>
-                  <Text className={styles.participantName}>
-                    {participant.member.name}
-                    {participant.member.isAdmin && ' (管理员)'}
-                  </Text>
-                  <Text style={{ fontSize: '22rpx', color: '#8D6E63' }}>
-                    {participant.lastReadAt ? `最近阅读: ${formatDate(participant.lastReadAt)}` : '即将开始'}
-                  </Text>
-                </View>
-                <View className={styles.participantProgress}>
-                  <View className={styles.progressMiniTrack}>
-                    <View
-                      className={styles.progressMiniFill}
-                      style={{
-                        width: `${getProgressPercent(participant.currentChapter, currentPlan.book.totalChapters)}%`
-                      }}
-                    />
+            {currentPlan.participants.map(participant => {
+              const isCompleted = participant.currentChapter >= currentPlan.book.totalChapters;
+              return (
+                <View key={participant.id} className={styles.participantItem}>
+                  <Image
+                    src={participant.member.avatar}
+                    className={styles.participantAvatar}
+                  />
+                  <View className={styles.participantInfo}>
+                    <View style={{ display: 'flex', alignItems: 'center' }}>
+                      <Text className={styles.participantName}>
+                        {participant.member.name}
+                        {participant.member.isAdmin && ' (管理员)'}
+                      </Text>
+                      {isCompleted && <Text className={styles.completedBadge}>已完成</Text>}
+                    </View>
+                    <Text style={{ fontSize: '22rpx', color: '#8D6E63' }}>
+                      {participant.lastReadAt ? `最近阅读: ${formatDate(participant.lastReadAt)}` : '即将开始'}
+                    </Text>
                   </View>
-                  <Text className={styles.progressMiniText}>
-                    {getProgressPercent(participant.currentChapter, currentPlan.book.totalChapters)}%
-                  </Text>
+                  <View className={styles.participantProgress}>
+                    <View className={styles.progressMiniTrack}>
+                      <View
+                        className={classNames(styles.progressMiniFill, isCompleted && styles.progressMiniFillCompleted)}
+                        style={{
+                          width: `${getProgressPercent(participant.currentChapter, currentPlan.book.totalChapters)}%`
+                        }}
+                      />
+                    </View>
+                    <Text className={styles.progressMiniText}>
+                      {isCompleted ? '已完成' : `${getProgressPercent(participant.currentChapter, currentPlan.book.totalChapters)}%`}
+                    </Text>
+                  </View>
                 </View>
-              </View>
-            ))}
+              );
+            })}
           </View>
         </View>
 

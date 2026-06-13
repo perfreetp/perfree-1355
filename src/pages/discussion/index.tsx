@@ -217,7 +217,7 @@ const DiscussionPage: React.FC = () => {
           >
             全部章节
           </Button>
-          {chapters.slice(0, 15).map(chapter => {
+          {chapters.map(chapter => {
             return (
               <Button
                 key={chapter}

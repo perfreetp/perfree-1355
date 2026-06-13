@@ -387,7 +387,7 @@ const BorrowPage: React.FC = () => {
                     mode="date"
                     value={selectedDate}
                     start={formatDate(new Date(Date.now() - 30 * 86400000))}
-                    end={formatDate(new Date())}
+                    end={formatDate(new Date(Date.now() + 365 * 86400000))}
                     onChange={(e: any) => setSelectedDate(e.detail.value)}
                   >
                     <View className={styles.pickerInput}>

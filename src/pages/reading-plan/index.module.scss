@@ -265,6 +265,21 @@
   border-radius: $radius-round;
 }
 
+.progressMiniFillCompleted {
+  background: $color-success;
+}
+
+.completedBadge {
+  display: inline-block;
+  padding: 4rpx 12rpx;
+  background: rgba(76, 175, 80, 0.1);
+  color: $color-success;
+  border-radius: $radius-round;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+  margin-left: $spacing-sm;
+}
+
 .progressMiniText {
   font-size: $font-size-xs;
   color: $color-text-tertiary;

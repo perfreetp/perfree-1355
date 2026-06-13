@@ -34,6 +34,7 @@ interface AppState {
   borrowRecords: BorrowRecord[];
   activityReviews: ActivityReview[];
   ratings: BookRating[];
+  activePlanId: string | null;
 
   getCurrentUser: () => Member | undefined;
   getMemberById: (id: string) => Member | undefined;
@@ -162,12 +163,20 @@ export const useAppStore = create<AppState>()(
       borrowRecords: JSON.parse(JSON.stringify(mockBorrowRecords)),
       activityReviews: JSON.parse(JSON.stringify(mockActivityReviews)),
       ratings: [],
+      activePlanId: null as string | null,
 
       getCurrentUser: () => get().members.find(m => m.id === get().currentUserId),
       getMemberById: (id: string) => get().members.find(m => m.id === id),
       getBookById: (id: string) => get().books.find(b => b.id === id),
       getMemberBookById: (id: string) => get().memberBooks.find(mb => mb.id === id),
-      getCurrentPlan: () => get().readingPlans.find(p => p.status === 'ongoing'),
+      getCurrentPlan: () => {
+        const state = get();
+        if (state.activePlanId) {
+          const activePlan = state.getPlanById(state.activePlanId);
+          if (activePlan) return activePlan;
+        }
+        return state.readingPlans.find(p => p.status === 'ongoing');
+      },
       getPlanById: (id: string) => get().readingPlans.find(p => p.id === id),
       getUpcomingPlans: () => get().readingPlans.filter(p => p.status === 'upcoming'),
       getCompletedPlans: () => get().readingPlans.filter(p => p.status === 'completed'),
@@ -200,7 +209,7 @@ export const useAppStore = create<AppState>()(
           return p;
         });
 
-        set({ readingPlans: [newPlan, ...updatedPlans] });
+        set({ readingPlans: [newPlan, ...updatedPlans], activePlanId: newPlan.id });
         console.log('[Store] 发布共读计划', { planId: newPlan.id, book: book.title, month });
         return newPlan;
       },
@@ -582,6 +591,7 @@ export const useAppStore = create<AppState>()(
       },
       partialize: (state) => ({
         currentUserId: state.currentUserId,
+        activePlanId: state.activePlanId,
         members: state.members,
         books: state.books,
         memberBooks: state.memberBooks.map(({ book, member, ...rest }) => rest),
