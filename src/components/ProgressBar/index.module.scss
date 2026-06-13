@@ -1,0 +1,25 @@
+@use '@/styles/variables.scss' as *;
+
+.progressBar {
+  width: 100%;
+}
+
+.progressTrack {
+  width: 100%;
+  background-color: $color-bg-hover;
+  border-radius: $radius-round;
+  overflow: hidden;
+}
+
+.progressFill {
+  border-radius: $radius-round;
+  transition: width $transition-base ease;
+}
+
+.progressText {
+  display: block;
+  margin-top: $spacing-sm;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  text-align: right;
+}

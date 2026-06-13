@@ -1,0 +1,280 @@
+@use '@/styles/variables.scss' as *;
+
+.pageContainer {
+  padding: $page-spacing;
+  padding-bottom: $spacing-xl;
+  min-height: 100vh;
+}
+
+.tabSection {
+  display: flex;
+  margin-bottom: $spacing-lg;
+  gap: $spacing-sm;
+}
+
+.tabItem {
+  @include button-reset;
+  flex: 1;
+  height: $button-height-md;
+  background: $color-bg-card;
+  color: $color-text-secondary;
+  border-radius: $radius-button;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+
+  &.active {
+    background: $color-primary;
+    color: $color-text-white;
+  }
+
+  &:active {
+    opacity: 0.9;
+  }
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-md;
+}
+
+.sectionTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.recordCount {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.borrowList {
+  margin-bottom: $spacing-lg;
+}
+
+.borrowCard {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-md;
+  box-shadow: $shadow-card;
+}
+
+.cardHeader {
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: $spacing-md;
+}
+
+.bookCover {
+  width: 100rpx;
+  height: 140rpx;
+  border-radius: $radius-sm;
+  flex-shrink: 0;
+}
+
+.bookInfo {
+  flex: 1;
+  margin-left: $spacing-md;
+  min-width: 0;
+}
+
+.bookTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  @include text-ellipsis;
+}
+
+.bookAuthor {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  margin-top: 4rpx;
+}
+
+.statusBadge {
+  padding: 4rpx $spacing-sm;
+  border-radius: $radius-xs;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+  margin-top: $spacing-sm;
+  align-self: flex-start;
+}
+
+.pending {
+  background: rgba(255, 152, 0, 0.1);
+  color: #FF9800;
+}
+
+.approved {
+  background: rgba(22, 119, 255, 0.1);
+  color: #1677ff;
+}
+
+.borrowed {
+  background: rgba(124, 179, 66, 0.1);
+  color: #7CB342;
+}
+
+.returned {
+  background: rgba(134, 144, 156, 0.1);
+  color: #86909C;
+}
+
+.rejected {
+  background: rgba(245, 63, 63, 0.1);
+  color: #F53F3F;
+}
+
+.borrowDetails {
+  padding-top: $spacing-md;
+  border-top: 1rpx solid $color-divider;
+}
+
+.detailRow {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: $spacing-sm;
+
+  &:last-child {
+    margin-bottom: 0;
+  }
+}
+
+.detailLabel {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.detailValue {
+  font-size: $font-size-sm;
+  color: $color-text-primary;
+  font-weight: $font-weight-medium;
+}
+
+.daysRemaining {
+  font-size: $font-size-sm;
+  font-weight: $font-weight-semibold;
+}
+
+.warning {
+  color: #FF9800;
+}
+
+.danger {
+  color: #F53F3F;
+}
+
+.normal {
+  color: #7CB342;
+}
+
+.cardActions {
+  display: flex;
+  gap: $spacing-sm;
+  margin-top: $spacing-md;
+  padding-top: $spacing-md;
+  border-top: 1rpx solid $color-divider;
+}
+
+.actionBtn {
+  @include button-reset;
+  flex: 1;
+  height: $button-height-sm;
+  background: $color-bg-hover;
+  color: $color-text-secondary;
+  border-radius: $radius-button;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+
+  &.primary {
+    background: $color-primary;
+    color: $color-text-white;
+  }
+
+  &.success {
+    background: $color-success;
+    color: $color-text-white;
+  }
+
+  &.warning {
+    background: $color-warning;
+    color: $color-text-white;
+  }
+
+  &:active {
+    opacity: 0.9;
+  }
+}
+
+.reminderSection {
+  background: linear-gradient(135deg, #FFF3E0 0%, #FFE0B2 100%);
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-lg;
+}
+
+.reminderHeader {
+  display: flex;
+  align-items: center;
+  margin-bottom: $spacing-sm;
+}
+
+.reminderIcon {
+  font-size: $font-size-xl;
+  margin-right: $spacing-sm;
+}
+
+.reminderTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: #E65100;
+}
+
+.reminderDesc {
+  font-size: $font-size-sm;
+  color: #E65100;
+  opacity: 0.8;
+}
+
+.emptyState {
+  padding: $spacing-xl * 2;
+  text-align: center;
+}
+
+.emptyIcon {
+  font-size: 120rpx;
+  margin-bottom: $spacing-lg;
+}
+
+.emptyTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.emptyDesc {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  margin-top: $spacing-sm;
+}
+
+.userInfo {
+  display: flex;
+  align-items: center;
+  margin-top: $spacing-sm;
+}
+
+.userAvatar {
+  width: 40rpx;
+  height: 40rpx;
+  border-radius: $radius-round;
+}
+
+.userName {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  margin-left: $spacing-xs;
+}

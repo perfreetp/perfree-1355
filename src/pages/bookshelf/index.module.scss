@@ -1,0 +1,177 @@
+@use '@/styles/variables.scss' as *;
+
+.pageContainer {
+  padding: $page-spacing;
+  padding-bottom: $spacing-xl;
+  min-height: 100vh;
+}
+
+.filterSection {
+  display: flex;
+  margin-bottom: $spacing-lg;
+  gap: $spacing-sm;
+}
+
+.filterTab {
+  @include button-reset;
+  flex: 1;
+  height: $button-height-md;
+  background: $color-bg-card;
+  color: $color-text-secondary;
+  border-radius: $radius-button;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+
+  &.active {
+    background: $color-primary;
+    color: $color-text-white;
+  }
+
+  &:active {
+    opacity: 0.9;
+  }
+}
+
+.searchSection {
+  margin-bottom: $spacing-lg;
+}
+
+.searchInput {
+  width: 100%;
+  height: 72rpx;
+  padding: 0 $spacing-lg;
+  background: $color-bg-card;
+  border-radius: $radius-button;
+  font-size: $font-size-md;
+  box-shadow: $shadow-card;
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-md;
+}
+
+.sectionTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.bookCount {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.addButton {
+  @include button-reset;
+  height: $button-height-md;
+  padding: 0 $spacing-lg;
+  background: $color-primary;
+  color: $color-text-white;
+  border-radius: $radius-button;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.98);
+  }
+}
+
+.memberFilter {
+  display: flex;
+  margin-bottom: $spacing-lg;
+  gap: $spacing-sm;
+  overflow-x: auto;
+  padding-bottom: $spacing-sm;
+
+  &::-webkit-scrollbar {
+    display: none;
+  }
+}
+
+.memberFilterItem {
+  @include button-reset;
+  flex-shrink: 0;
+  height: $button-height-sm;
+  padding: 0 $spacing-md;
+  background: $color-bg-card;
+  color: $color-text-secondary;
+  border-radius: $radius-button;
+  font-size: $font-size-sm;
+
+  &.active {
+    background: $color-primary;
+    color: $color-text-white;
+  }
+
+  &:active {
+    opacity: 0.9;
+  }
+}
+
+.booksList {
+  margin-bottom: $spacing-lg;
+}
+
+.memberSection {
+  margin-bottom: $spacing-xl;
+}
+
+.memberHeader {
+  display: flex;
+  align-items: center;
+  margin-bottom: $spacing-md;
+  padding: $spacing-md;
+  background: $color-bg-card;
+  border-radius: $radius-md;
+  box-shadow: $shadow-card;
+}
+
+.memberAvatar {
+  width: 80rpx;
+  height: 80rpx;
+  border-radius: $radius-round;
+}
+
+.memberInfo {
+  flex: 1;
+  margin-left: $spacing-md;
+  min-width: 0;
+}
+
+.memberName {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.memberBooksCount {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  margin-top: 4rpx;
+}
+
+.emptyState {
+  padding: $spacing-xl * 2;
+  text-align: center;
+}
+
+.emptyIcon {
+  font-size: 120rpx;
+  margin-bottom: $spacing-lg;
+}
+
+.emptyTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.emptyDesc {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  margin-top: $spacing-sm;
+}

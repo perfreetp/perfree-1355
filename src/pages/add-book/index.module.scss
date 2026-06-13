@@ -1,0 +1,284 @@
+@use '@/styles/variables.scss' as *;
+
+.pageContainer {
+  min-height: 100vh;
+  background: $bg-primary;
+  padding: 24px;
+  padding-bottom: 120px;
+}
+
+.formCard {
+  background: $surface;
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: $shadow-sm;
+}
+
+.sectionTitle {
+  font-size: 30px;
+  font-weight: 700;
+  color: $text-primary;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sectionIcon {
+  font-size: 32px;
+}
+
+.formGroup {
+  margin-bottom: 24px;
+}
+
+.label {
+  display: block;
+  font-size: 26px;
+  font-weight: 500;
+  color: $text-primary;
+  margin-bottom: 12px;
+}
+
+.required {
+  color: $error;
+  margin-left: 4px;
+}
+
+.input {
+  width: 100%;
+  height: 80px;
+  padding: 0 24px;
+  background: $bg-secondary;
+  border: 2px solid $border-light;
+  border-radius: 12px;
+  font-size: 28px;
+  color: $text-primary;
+  box-sizing: border-box;
+}
+
+.input:focus {
+  border-color: $primary;
+}
+
+.textarea {
+  width: 100%;
+  min-height: 160px;
+  padding: 20px 24px;
+  background: $bg-secondary;
+  border: 2px solid $border-light;
+  border-radius: 12px;
+  font-size: 28px;
+  color: $text-primary;
+  box-sizing: border-box;
+  line-height: 1.6;
+}
+
+.textarea:focus {
+  border-color: $primary;
+}
+
+.conditionSelector {
+  display: flex;
+  gap: 16px;
+  flex-wrap: wrap;
+}
+
+.conditionOption {
+  flex: 1;
+  min-width: 120px;
+  padding: 20px 16px;
+  background: $bg-secondary;
+  border: 2px solid $border-light;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.conditionOptionActive {
+  border-color: $primary;
+  background: $primary-light;
+}
+
+.conditionEmoji {
+  font-size: 40px;
+  margin-bottom: 8px;
+}
+
+.conditionLabel {
+  font-size: 24px;
+  color: $text-primary;
+  font-weight: 500;
+}
+
+.conditionOptionActive .conditionLabel {
+  color: $primary;
+}
+
+.availabilityToggle {
+  display: flex;
+  background: $bg-secondary;
+  border-radius: 12px;
+  padding: 8px;
+}
+
+.availabilityOption {
+  flex: 1;
+  padding: 20px;
+  text-align: center;
+  border-radius: 8px;
+  font-size: 26px;
+  color: $text-secondary;
+  font-weight: 500;
+}
+
+.availabilityOptionActive {
+  background: $primary;
+  color: $text-inverse;
+}
+
+.bookPreview {
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+  background: $bg-secondary;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  align-items: center;
+}
+
+.previewCover {
+  width: 120px;
+  height: 168px;
+  border-radius: 8px;
+  flex-shrink: 0;
+  background: $border-light;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.previewCoverIcon {
+  font-size: 48px;
+  color: $text-tertiary;
+}
+
+.previewInfo {
+  flex: 1;
+}
+
+.previewTitle {
+  font-size: 28px;
+  font-weight: 600;
+  color: $text-primary;
+  margin-bottom: 8px;
+}
+
+.previewAuthor {
+  font-size: 24px;
+  color: $text-secondary;
+  margin-bottom: 8px;
+}
+
+.previewDesc {
+  font-size: 22px;
+  color: $text-tertiary;
+  line-height: 1.5;
+}
+
+.bottomActions {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: $surface;
+  padding: 24px;
+  padding-bottom: calc(24px + env(safe-area-inset-bottom));
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.submitButton {
+  width: 100%;
+  height: 88px;
+  background: linear-gradient(135deg, $primary 0%, #A67C52 100%);
+  color: $text-inverse;
+  border: none;
+  border-radius: 44px;
+  font-size: 30px;
+  font-weight: 600;
+}
+
+.disabledButton {
+  background: $bg-disabled;
+  color: $text-disabled;
+}
+
+.tip {
+  font-size: 22px;
+  color: $text-tertiary;
+  margin-top: 8px;
+  line-height: 1.5;
+}
+
+.searchResult {
+  max-height: 400px;
+  overflow-y: auto;
+  margin-top: 16px;
+}
+
+.searchItem {
+  display: flex;
+  gap: 16px;
+  padding: 16px;
+  background: $bg-secondary;
+  border-radius: 12px;
+  margin-bottom: 12px;
+  align-items: center;
+}
+
+.searchItemCover {
+  width: 80px;
+  height: 112px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.searchItemInfo {
+  flex: 1;
+}
+
+.searchItemTitle {
+  font-size: 28px;
+  font-weight: 600;
+  color: $text-primary;
+  margin-bottom: 8px;
+}
+
+.searchItemAuthor {
+  font-size: 24px;
+  color: $text-secondary;
+}
+
+.searchItemBtn {
+  padding: 12px 24px;
+  background: $primary;
+  color: $text-inverse;
+  border-radius: 8px;
+  font-size: 24px;
+}
+
+.emptySearch {
+  text-align: center;
+  padding: 48px;
+  color: $text-tertiary;
+  font-size: 26px;
+}
+
+.inputRow {
+  display: flex;
+  gap: 16px;
+}
+
+.inputRow .input {
+  flex: 1;
+}

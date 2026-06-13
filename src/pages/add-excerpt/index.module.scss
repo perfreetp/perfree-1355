@@ -1,0 +1,287 @@
+@use '@/styles/variables.scss' as *;
+
+.pageContainer {
+  min-height: 100vh;
+  background: $bg-primary;
+  padding: 24px;
+  padding-bottom: 120px;
+}
+
+.formCard {
+  background: $surface;
+  border-radius: 16px;
+  padding: 24px;
+  margin-bottom: 24px;
+  box-shadow: $shadow-sm;
+}
+
+.sectionTitle {
+  font-size: 30px;
+  font-weight: 700;
+  color: $text-primary;
+  margin-bottom: 24px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.sectionIcon {
+  font-size: 32px;
+}
+
+.formGroup {
+  margin-bottom: 24px;
+}
+
+.label {
+  display: block;
+  font-size: 26px;
+  font-weight: 500;
+  color: $text-primary;
+  margin-bottom: 12px;
+}
+
+.required {
+  color: $error;
+  margin-left: 4px;
+}
+
+.input {
+  width: 100%;
+  height: 80px;
+  padding: 0 24px;
+  background: $bg-secondary;
+  border: 2px solid $border-light;
+  border-radius: 12px;
+  font-size: 28px;
+  color: $text-primary;
+  box-sizing: border-box;
+}
+
+.input:focus {
+  border-color: $primary;
+}
+
+.textarea {
+  width: 100%;
+  min-height: 200px;
+  padding: 20px 24px;
+  background: $bg-secondary;
+  border: 2px solid $border-light;
+  border-radius: 12px;
+  font-size: 28px;
+  color: $text-primary;
+  box-sizing: border-box;
+  line-height: 1.6;
+}
+
+.textarea:focus {
+  border-color: $primary;
+}
+
+.typeSelector {
+  display: flex;
+  gap: 16px;
+}
+
+.typeOption {
+  flex: 1;
+  padding: 24px 16px;
+  background: $bg-secondary;
+  border: 2px solid $border-light;
+  border-radius: 12px;
+  text-align: center;
+}
+
+.typeOptionActive {
+  border-color: $primary;
+  background: $primary-light;
+}
+
+.typeEmoji {
+  font-size: 40px;
+  margin-bottom: 8px;
+}
+
+.typeLabel {
+  font-size: 24px;
+  color: $text-primary;
+  font-weight: 500;
+}
+
+.typeOptionActive .typeLabel {
+  color: $primary;
+}
+
+.bookInfo {
+  display: flex;
+  gap: 20px;
+  padding: 20px;
+  background: $bg-secondary;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  align-items: center;
+}
+
+.bookCover {
+  width: 100px;
+  height: 140px;
+  border-radius: 8px;
+  flex-shrink: 0;
+}
+
+.bookDetails {
+  flex: 1;
+}
+
+.bookTitle {
+  font-size: 28px;
+  font-weight: 600;
+  color: $text-primary;
+  margin-bottom: 8px;
+}
+
+.bookAuthor {
+  font-size: 24px;
+  color: $text-secondary;
+  margin-bottom: 8px;
+}
+
+.bookMeta {
+  font-size: 22px;
+  color: $text-tertiary;
+}
+
+.chapterSelector {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.chapterBtn {
+  padding: 16px 24px;
+  background: $bg-secondary;
+  border: 2px solid $border-light;
+  border-radius: 12px;
+  font-size: 26px;
+  color: $text-secondary;
+}
+
+.chapterBtnActive {
+  background: $primary;
+  border-color: $primary;
+  color: $text-inverse;
+}
+
+.chapterInput {
+  display: flex;
+  gap: 16px;
+  align-items: center;
+}
+
+.chapterInput .input {
+  flex: 1;
+}
+
+.chapterUnit {
+  font-size: 26px;
+  color: $text-secondary;
+}
+
+.tip {
+  font-size: 22px;
+  color: $text-tertiary;
+  margin-top: 8px;
+  line-height: 1.5;
+}
+
+.quoteStyle {
+  background: $primary-light;
+  border-left: 6px solid $primary;
+  padding: 20px 24px;
+  font-style: italic;
+  color: $text-primary;
+  line-height: 1.8;
+  font-size: 26px;
+  border-radius: 0 12px 12px 0;
+  margin-top: 16px;
+}
+
+.previewSection {
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid $border-light;
+}
+
+.previewLabel {
+  font-size: 24px;
+  color: $text-secondary;
+  margin-bottom: 12px;
+}
+
+.bottomActions {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: $surface;
+  padding: 24px;
+  padding-bottom: calc(24px + env(safe-area-inset-bottom));
+  box-shadow: 0 -4px 16px rgba(0, 0, 0, 0.08);
+}
+
+.submitButton {
+  width: 100%;
+  height: 88px;
+  background: linear-gradient(135deg, $primary 0%, #A67C52 100%);
+  color: $text-inverse;
+  border: none;
+  border-radius: 44px;
+  font-size: 30px;
+  font-weight: 600;
+}
+
+.disabledButton {
+  background: $bg-disabled;
+  color: $text-disabled;
+}
+
+.quickChapters {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.quickChapterBtn {
+  padding: 12px 20px;
+  background: $bg-secondary;
+  border-radius: 20px;
+  font-size: 24px;
+  color: $text-secondary;
+}
+
+.charCount {
+  text-align: right;
+  font-size: 22px;
+  color: $text-tertiary;
+  margin-top: 8px;
+}
+
+.typeTips {
+  padding: 16px;
+  background: $bg-secondary;
+  border-radius: 12px;
+  margin-top: 16px;
+}
+
+.typeTipItem {
+  font-size: 22px;
+  color: $text-tertiary;
+  line-height: 1.6;
+  margin-bottom: 8px;
+}
+
+.typeTipItem:last-child {
+  margin-bottom: 0;
+}

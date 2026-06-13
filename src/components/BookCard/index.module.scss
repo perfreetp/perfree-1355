@@ -1,0 +1,163 @@
+@use '@/styles/variables.scss' as *;
+
+.bookCard {
+  display: flex;
+  padding: $spacing-lg;
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  box-shadow: $shadow-card;
+  margin-bottom: $spacing-md;
+  transition: all $transition-base;
+
+  &:active {
+    transform: scale(0.99);
+    box-shadow: $shadow-card-hover;
+  }
+}
+
+.bookCover {
+  position: relative;
+  width: 160rpx;
+  height: 220rpx;
+  flex-shrink: 0;
+  border-radius: $radius-md;
+  overflow: hidden;
+  box-shadow: 0 4rpx 16rpx rgba(0, 0, 0, 0.1);
+}
+
+.coverImage {
+  width: 100%;
+  height: 100%;
+}
+
+.availabilityTag {
+  position: absolute;
+  top: $spacing-sm;
+  right: $spacing-sm;
+  padding: 4rpx $spacing-sm;
+  border-radius: $radius-xs;
+  font-size: $font-size-xs;
+  font-weight: $font-weight-medium;
+  color: $color-text-white;
+}
+
+.available {
+  background: $color-success;
+}
+
+.unavailable {
+  background: $color-text-tertiary;
+}
+
+.bookInfo {
+  flex: 1;
+  margin-left: $spacing-lg;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  min-width: 0;
+}
+
+.bookTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  @include text-ellipsis;
+}
+
+.bookAuthor {
+  font-size: $font-size-md;
+  color: $color-text-secondary;
+  margin-top: $spacing-xs;
+  @include text-ellipsis;
+}
+
+.bookMeta {
+  display: flex;
+  align-items: center;
+  margin-top: $spacing-sm;
+}
+
+.rating {
+  display: flex;
+  align-items: center;
+}
+
+.ratingStar {
+  color: #FFD700;
+  font-size: $font-size-md;
+}
+
+.ratingValue {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+  margin-left: 4rpx;
+}
+
+.ratingCount {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  margin-left: $spacing-xs;
+}
+
+.bookCategory {
+  margin-left: auto;
+  padding: 4rpx $spacing-sm;
+  background: $color-bg-tag;
+  color: $color-primary;
+  border-radius: $radius-xs;
+  font-size: $font-size-xs;
+}
+
+.progressSection {
+  margin-top: $spacing-md;
+}
+
+.progressTrack {
+  width: 100%;
+  height: 8rpx;
+  background: $color-bg-hover;
+  border-radius: $radius-round;
+  overflow: hidden;
+}
+
+.progressFill {
+  height: 100%;
+  background: linear-gradient(90deg, $color-primary-light, $color-primary);
+  border-radius: $radius-round;
+  transition: width $transition-base ease;
+}
+
+.progressText {
+  display: block;
+  margin-top: $spacing-xs;
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+}
+
+.ownerInfo {
+  display: flex;
+  align-items: center;
+  margin-top: $spacing-md;
+  padding-top: $spacing-md;
+  border-top: 1rpx solid $color-divider;
+}
+
+.ownerAvatar {
+  width: 48rpx;
+  height: 48rpx;
+  border-radius: $radius-round;
+}
+
+.ownerName {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  margin-left: $spacing-sm;
+}
+
+.bookCondition {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  margin-left: $spacing-xs;
+}

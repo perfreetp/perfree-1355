@@ -1,0 +1,234 @@
+@use '@/styles/variables.scss' as *;
+
+.pageContainer {
+  padding: $page-spacing;
+  padding-bottom: $spacing-xl;
+  min-height: 100vh;
+}
+
+.currentBookSection {
+  background: linear-gradient(135deg, $color-primary 0%, $color-primary-light 100%);
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-lg;
+  color: $color-text-white;
+}
+
+.currentBookHeader {
+  font-size: $font-size-sm;
+  opacity: 0.9;
+  margin-bottom: $spacing-sm;
+}
+
+.currentBookInfo {
+  display: flex;
+  align-items: center;
+}
+
+.currentBookCover {
+  width: 120rpx;
+  height: 170rpx;
+  border-radius: $radius-sm;
+  flex-shrink: 0;
+}
+
+.currentBookText {
+  flex: 1;
+  margin-left: $spacing-md;
+  min-width: 0;
+}
+
+.currentBookTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  display: block;
+  @include text-ellipsis;
+}
+
+.currentBookAuthor {
+  font-size: $font-size-sm;
+  opacity: 0.85;
+  display: block;
+  margin-top: $spacing-xs;
+}
+
+.filterSection {
+  display: flex;
+  margin-bottom: $spacing-lg;
+  gap: $spacing-sm;
+}
+
+.filterTab {
+  @include button-reset;
+  flex: 1;
+  height: $button-height-md;
+  background: $color-bg-card;
+  color: $color-text-secondary;
+  border-radius: $radius-button;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+
+  &.active {
+    background: $color-primary;
+    color: $color-text-white;
+  }
+
+  &:active {
+    opacity: 0.9;
+  }
+}
+
+.chapterFilter {
+  margin-bottom: $spacing-lg;
+}
+
+.chapterList {
+  display: flex;
+  flex-wrap: wrap;
+  gap: $spacing-sm;
+}
+
+.chapterItem {
+  @include button-reset;
+  height: $button-height-sm;
+  padding: 0 $spacing-md;
+  background: $color-bg-card;
+  color: $color-text-secondary;
+  border-radius: $radius-button;
+  font-size: $font-size-sm;
+
+  &.active {
+    background: $color-primary;
+    color: $color-text-white;
+  }
+
+  &:active {
+    opacity: 0.9;
+  }
+}
+
+.sectionHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-md;
+}
+
+.sectionTitle {
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.excerptCount {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+}
+
+.addExcerptBtn {
+  @include button-reset;
+  height: $button-height-md;
+  padding: 0 $spacing-lg;
+  background: linear-gradient(135deg, $color-primary-light, $color-primary);
+  color: $color-text-white;
+  border-radius: $radius-button;
+  font-size: $font-size-sm;
+  font-weight: $font-weight-medium;
+
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.98);
+  }
+}
+
+.excerptsList {
+  margin-bottom: $spacing-lg;
+}
+
+.statsSection {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-lg;
+  box-shadow: $shadow-card;
+}
+
+.statsGrid {
+  display: flex;
+}
+
+.statItem {
+  flex: 1;
+  text-align: center;
+}
+
+.statValue {
+  font-size: $font-size-xxl;
+  font-weight: $font-weight-bold;
+  color: $color-primary;
+}
+
+.statLabel {
+  font-size: $font-size-sm;
+  color: $color-text-tertiary;
+  margin-top: $spacing-xs;
+}
+
+.statDivider {
+  width: 1rpx;
+  background: $color-divider;
+  margin: 0 $spacing-md;
+}
+
+.ratingSection {
+  background: $color-bg-card;
+  border-radius: $radius-lg;
+  padding: $spacing-lg;
+  margin-bottom: $spacing-lg;
+  box-shadow: $shadow-card;
+}
+
+.ratingHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: $spacing-md;
+}
+
+.ratingTitle {
+  font-size: $font-size-md;
+  font-weight: $font-weight-semibold;
+  color: $color-text-primary;
+}
+
+.myRating {
+  display: flex;
+  align-items: center;
+}
+
+.ratingStars {
+  display: flex;
+  gap: $spacing-xs;
+}
+
+.star {
+  font-size: $font-size-xl;
+  color: $color-border;
+  cursor: pointer;
+  transition: all $transition-base;
+
+  &.filled {
+    color: #FFD700;
+  }
+
+  &:active {
+    transform: scale(1.2);
+  }
+}
+
+.ratingValue {
+  margin-left: $spacing-sm;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-bold;
+  color: $color-primary;
+}
