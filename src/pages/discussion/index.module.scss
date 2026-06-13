@@ -232,3 +232,67 @@
   font-weight: $font-weight-bold;
   color: $color-primary;
 }
+
+.memberFilter {
+  margin-bottom: $spacing-lg;
+}
+
+.memberList {
+  white-space: nowrap;
+}
+
+.memberFilterItem {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: center;
+  padding: $spacing-sm $spacing-md;
+  margin-right: $spacing-sm;
+  background: $color-bg-card;
+  border-radius: $radius-md;
+  border: 2rpx solid transparent;
+  transition: all $transition-base;
+
+  &.memberFilterActive {
+    border-color: $color-primary;
+    background: rgba(139, 90, 43, 0.05);
+  }
+}
+
+.memberFilterAvatar {
+  width: 64rpx;
+  height: 64rpx;
+  border-radius: $radius-round;
+  margin-bottom: $spacing-xs;
+}
+
+.memberFilterName {
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+}
+
+.memberFilterText {
+  font-size: $font-size-sm;
+  color: $color-text-secondary;
+  line-height: 64rpx;
+}
+
+.sortTabs {
+  display: flex;
+  background: $color-bg-hover;
+  border-radius: $radius-round;
+  padding: 4rpx;
+}
+
+.sortTab {
+  padding: 8rpx $spacing-md;
+  font-size: $font-size-xs;
+  color: $color-text-secondary;
+  border-radius: $radius-round;
+  transition: all $transition-base;
+
+  &.sortTabActive {
+    background: $color-primary;
+    color: $color-text-white;
+    font-weight: $font-weight-medium;
+  }
+}

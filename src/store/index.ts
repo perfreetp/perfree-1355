@@ -95,7 +95,7 @@ interface AppState {
     note?: string;
   }) => BorrowRecord;
 
-  approveBorrow: (recordId: string, actualBorrowDate?: string) => void;
+  approveBorrow: (recordId: string, agreedPickupDate?: string) => void;
   rejectBorrow: (recordId: string) => void;
   confirmPickup: (recordId: string, actualBorrowDate?: string) => void;
   confirmReturn: (recordId: string, actualReturnDate?: string) => void;
@@ -103,6 +103,12 @@ interface AppState {
   getBorrowRecordsByBorrowerId: (borrowerId: string) => BorrowRecord[];
   getBorrowRecordsByOwnerId: (ownerId: string) => BorrowRecord[];
   getPendingBorrows: (userId: string) => BorrowRecord[];
+
+  getMemberBooksByBookId: (bookId: string) => MemberBook[];
+  getAvailableCountByBookId: (bookId: string) => number;
+  getActiveBorrowsByBookId: (bookId: string) => BorrowRecord[];
+
+  completeReadingPlan: (planId: string, summary?: string) => ActivityReview;
 }
 
 const genId = (prefix: string) => `${prefix}${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
@@ -469,20 +475,20 @@ export const useAppStore = create<AppState>()(
         return newRecord;
       },
 
-      approveBorrow: (recordId: string, actualBorrowDate?: string) => {
+      approveBorrow: (recordId: string, agreedPickupDate?: string) => {
         const state = get();
         const updated = state.borrowRecords.map(br => {
           if (br.id === recordId) {
             return {
               ...br,
               status: 'approved' as const,
-              actualBorrowDate: actualBorrowDate || br.actualBorrowDate
+              agreedPickupDate: agreedPickupDate || br.agreedPickupDate
             };
           }
           return br;
         });
         set({ borrowRecords: updated });
-        console.log('[Store] 同意借阅', { recordId });
+        console.log('[Store] 同意借阅', { recordId, agreedPickupDate });
       },
 
       rejectBorrow: (recordId: string) => {
@@ -504,7 +510,8 @@ export const useAppStore = create<AppState>()(
             return {
               ...br,
               status: 'borrowed' as const,
-              actualBorrowDate: actualBorrowDate || formatDate(new Date())
+              actualBorrowDate: actualBorrowDate || formatDate(new Date()),
+              agreedPickupDate: br.agreedPickupDate
             };
           }
           return br;
@@ -558,7 +565,76 @@ export const useAppStore = create<AppState>()(
           br =>
             br.status === 'pending' &&
             (br.ownerId === userId || br.borrowerId === userId)
-        )
+        ),
+
+      getMemberBooksByBookId: (bookId: string) =>
+        get().memberBooks.filter(mb => mb.bookId === bookId),
+
+      getAvailableCountByBookId: (bookId: string) =>
+        get().memberBooks.filter(mb => mb.bookId === bookId && mb.isAvailable).length,
+
+      getActiveBorrowsByBookId: (bookId: string) =>
+        get().borrowRecords.filter(
+          br => br.memberBook.bookId === bookId && (br.status === 'approved' || br.status === 'borrowed')
+        ),
+
+      completeReadingPlan: (planId: string, summary?: string) => {
+        const state = get();
+        const plan = state.getPlanById(planId);
+        if (!plan) {
+          throw new Error('Plan not found');
+        }
+
+        const completedMembers = plan.participants.filter(p => p.currentChapter >= plan.book.totalChapters);
+        const planExcerpts = state.excerpts.filter(e => e.planId === planId);
+        const averageRating = state.getAverageRating(plan.bookId);
+
+        const keyNotes: string[] = [];
+        if (planExcerpts.length > 0) {
+          const topExcerpts = [...planExcerpts]
+            .sort((a, b) => b.likes - a.likes)
+            .slice(0, 3);
+          topExcerpts.forEach(e => {
+            keyNotes.push(e.content.slice(0, 50) + (e.content.length > 50 ? '...' : ''));
+          });
+        }
+
+        const review: ActivityReview = {
+          id: genId('review'),
+          title: `${plan.month} 共读 · ${plan.book.title}`,
+          month: plan.month,
+          bookId: plan.bookId,
+          book: plan.book,
+          completedMembers: completedMembers.map(p => p.member),
+          totalParticipants: plan.participants.length,
+          averageRating,
+          summary: summary || `本期共读《${plan.book.title}》，共有 ${plan.participants.length} 位成员参与，其中 ${completedMembers.length} 位完成了全书阅读。大家积极讨论，分享了 ${planExcerpts.length} 条精彩摘录和感悟。`,
+          keyNotes,
+          createdAt: formatDate(new Date())
+        };
+
+        const updatedPlans = state.readingPlans.map(p => {
+          if (p.id === planId) {
+            return { ...p, status: 'completed' as const };
+          }
+          return p;
+        });
+
+        let newActivePlanId = state.activePlanId;
+        if (state.activePlanId === planId) {
+          const nextOngoing = updatedPlans.find(p => p.status === 'ongoing');
+          newActivePlanId = nextOngoing ? nextOngoing.id : null;
+        }
+
+        set({
+          readingPlans: updatedPlans,
+          activityReviews: [review, ...state.activityReviews],
+          activePlanId: newActivePlanId
+        });
+
+        console.log('[Store] 结营共读计划', { planId, book: plan.book.title, completedCount: completedMembers.length });
+        return review;
+      }
     }),
     {
       name: 'bookclub-storage',

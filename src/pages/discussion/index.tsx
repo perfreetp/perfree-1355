@@ -10,14 +10,18 @@ import { getExcerptTypeText } from '@/utils';
 import type { ReadingPlan, Excerpt } from '@/types';
 
 type FilterType = 'all' | 'quote' | 'question' | 'thought';
+type SortType = 'latest' | 'hottest';
 
 const DiscussionPage: React.FC = () => {
   const store = useAppStore();
   const [currentPlan, setCurrentPlan] = useState<ReadingPlan | undefined>();
   const [filter, setFilter] = useState<FilterType>('all');
   const [selectedChapter, setSelectedChapter] = useState<number | null>(null);
+  const [selectedMemberId, setSelectedMemberId] = useState<string | null>(null);
+  const [sortType, setSortType] = useState<SortType>('latest');
   const [excerpts, setExcerpts] = useState<Excerpt[]>([]);
   const [myRating, setMyRating] = useState(0);
+  const [participatingMembers, setParticipatingMembers] = useState<any[]>([]);
 
   const currentUser = store.getCurrentUser();
 
@@ -36,13 +40,21 @@ const DiscussionPage: React.FC = () => {
         setMyRating(store.getMyRating(currentPlan.bookId));
       }
     }
-  }, [currentPlan, filter, selectedChapter]);
+  }, [currentPlan, filter, selectedChapter, selectedMemberId, sortType]);
 
   const loadData = () => {
     const plan = store.getCurrentPlan();
     setCurrentPlan(plan);
     if (plan && currentUser) {
       setMyRating(store.getMyRating(plan.bookId));
+      const planExcerpts = store.getExcerptsByPlanId(plan.id);
+      const memberMap = new Map();
+      planExcerpts.forEach(e => {
+        if (!memberMap.has(e.memberId)) {
+          memberMap.set(e.memberId, e.member);
+        }
+      });
+      setParticipatingMembers(Array.from(memberMap.values()));
     }
     console.log('[Discussion] 加载数据完成', { plan });
   };
@@ -64,8 +76,18 @@ const DiscussionPage: React.FC = () => {
       result = result.filter(e => e.type === filter);
     }
 
-    setExcerpts(result.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()));
-    console.log('[Discussion] 加载摘录完成', { filter, selectedChapter, count: result.length });
+    if (selectedMemberId !== null) {
+      result = result.filter(e => e.memberId === selectedMemberId);
+    }
+
+    if (sortType === 'latest') {
+      result.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
+    } else {
+      result.sort((a, b) => b.likes - a.likes);
+    }
+
+    setExcerpts(result);
+    console.log('[Discussion] 加载摘录完成', { filter, selectedChapter, selectedMemberId, sortType, count: result.length });
   };
 
   const handleAddExcerpt = () => {
@@ -231,12 +253,58 @@ const DiscussionPage: React.FC = () => {
         </ScrollView>
       </View>
 
+      {participatingMembers.length > 0 && (
+        <View className={styles.memberFilter}>
+          <Text style={{ fontSize: '28rpx', fontWeight: '500', color: '#2C1810', marginBottom: '16rpx' }}>
+            按成员查看
+          </Text>
+          <ScrollView
+            className={styles.memberList}
+            scrollX
+            enhanced
+            showScrollbar={false}
+          >
+            <View
+              className={`${styles.memberFilterItem} ${selectedMemberId === null ? styles.memberFilterActive : ''}`}
+              onClick={() => setSelectedMemberId(null)}
+            >
+              <Text className={styles.memberFilterText}>全部</Text>
+            </View>
+            {participatingMembers.map(member => (
+              <View
+                key={member.id}
+                className={`${styles.memberFilterItem} ${selectedMemberId === member.id ? styles.memberFilterActive : ''}`}
+                onClick={() => setSelectedMemberId(selectedMemberId === member.id ? null : member.id)}
+              >
+                <Image src={member.avatar} className={styles.memberFilterAvatar} />
+                <Text className={styles.memberFilterName}>{member.name}</Text>
+              </View>
+            ))}
+          </ScrollView>
+        </View>
+      )}
+
       <View className={styles.sectionHeader}>
         <Text className={styles.sectionTitle}>讨论摘录</Text>
-        <Text className={styles.excerptCount}>共{excerpts.length}条</Text>
-        <Button className={styles.addExcerptBtn} onClick={handleAddExcerpt}>
-          + 写摘录
-        </Button>
+        <View style={{ display: 'flex', alignItems: 'center', gap: '16rpx' }}>
+          <View className={styles.sortTabs}>
+            <Text
+              className={`${styles.sortTab} ${sortType === 'latest' ? styles.sortTabActive : ''}`}
+              onClick={() => setSortType('latest')}
+            >
+              最新
+            </Text>
+            <Text
+              className={`${styles.sortTab} ${sortType === 'hottest' ? styles.sortTabActive : ''}`}
+              onClick={() => setSortType('hottest')}
+            >
+              最热
+            </Text>
+          </View>
+          <Button className={styles.addExcerptBtn} onClick={handleAddExcerpt}>
+            + 写摘录
+          </Button>
+        </View>
       </View>
 
       {excerpts.length === 0 ? (

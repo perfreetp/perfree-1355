@@ -86,6 +86,7 @@ export interface BorrowRecord {
   status: 'pending' | 'approved' | 'borrowed' | 'returned' | 'rejected';
   applyDate: string;
   expectedReturnDate: string;
+  agreedPickupDate?: string;
   actualBorrowDate?: string;
   actualReturnDate?: string;
   note?: string;

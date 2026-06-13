@@ -372,6 +372,23 @@
   }
 }
 
+.completeButton {
+  @include button-reset;
+  width: 100%;
+  height: $button-height-lg;
+  background: $color-success;
+  color: $color-text-white;
+  border-radius: $radius-button;
+  font-size: $font-size-lg;
+  font-weight: $font-weight-semibold;
+  margin-top: $spacing-md;
+
+  &:active {
+    opacity: 0.9;
+    transform: scale(0.98);
+  }
+}
+
 .emptySection {
   background: $color-bg-card;
   border-radius: $radius-lg;

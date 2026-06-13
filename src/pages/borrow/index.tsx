@@ -297,17 +297,11 @@ const BorrowPage: React.FC = () => {
                     {formatDate(record.expectedReturnDate)}
                   </Text>
                 </View>
-                {record.status === 'borrowed' && (
+                {record.agreedPickupDate && (
                   <View className={styles.detailRow}>
-                    <Text className={styles.detailLabel}>借阅状态</Text>
-                    <Text
-                      className={classNames(
-                        styles.detailValue,
-                        styles.daysRemaining,
-                        getDaysRemainingClass(record.expectedReturnDate)
-                      )}
-                    >
-                      {formatDaysRemaining(record.expectedReturnDate)}
+                    <Text className={styles.detailLabel}>约定取书</Text>
+                    <Text className={styles.detailValue}>
+                      {formatDate(record.agreedPickupDate)}
                     </Text>
                   </View>
                 )}
@@ -324,6 +318,20 @@ const BorrowPage: React.FC = () => {
                     <Text className={styles.detailLabel}>实际归还</Text>
                     <Text className={styles.detailValue}>
                       {formatDate(record.actualReturnDate)}
+                    </Text>
+                  </View>
+                )}
+                {record.status === 'borrowed' && (
+                  <View className={styles.detailRow}>
+                    <Text className={styles.detailLabel}>借阅状态</Text>
+                    <Text
+                      className={classNames(
+                        styles.detailValue,
+                        styles.daysRemaining,
+                        getDaysRemainingClass(record.expectedReturnDate)
+                      )}
+                    >
+                      {formatDaysRemaining(record.expectedReturnDate)}
                     </Text>
                   </View>
                 )}
@@ -378,7 +386,7 @@ const BorrowPage: React.FC = () => {
                 <View className={styles.datePickerSection}>
                   <View className={styles.datePickerHeader}>
                     <Text className={styles.datePickerTitle}>
-                      {record.status === 'pending' && '请选择实际交接日期'}
+                      {record.status === 'pending' && '请选择约定交接日期'}
                       {record.status === 'approved' && '请选择实际取书日期'}
                       {record.status === 'borrowed' && '请选择实际归还日期'}
                     </Text>

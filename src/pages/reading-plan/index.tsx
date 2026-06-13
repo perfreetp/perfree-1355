@@ -18,11 +18,14 @@ const ReadingPlanPage: React.FC = () => {
   const store = useAppStore();
   const [currentPlan, setCurrentPlan] = useState<ReadingPlan | undefined>();
   const [upcomingPlans, setUpcomingPlans] = useState<ReadingPlan[]>([]);
+  const [completedPlans, setCompletedPlans] = useState<ReadingPlan[]>([]);
   const [isJoined, setIsJoined] = useState(false);
   const [showProgressModal, setShowProgressModal] = useState(false);
   const [currentChapter, setCurrentChapter] = useState('');
   const [myProgress, setMyProgress] = useState<ReadingParticipant | undefined>();
   const [completedCount, setCompletedCount] = useState(0);
+  const [showCompleteModal, setShowCompleteModal] = useState(false);
+  const [completeSummary, setCompleteSummary] = useState('');
 
   const currentUser = store.getCurrentUser();
 
@@ -37,8 +40,10 @@ const ReadingPlanPage: React.FC = () => {
   const loadData = () => {
     const plan = store.getCurrentPlan();
     const upcoming = store.getUpcomingPlans();
+    const completed = store.getCompletedPlans();
     setCurrentPlan(plan);
     setUpcomingPlans(upcoming);
+    setCompletedPlans(completed);
 
     if (plan && currentUser) {
       const participant = plan.participants.find(p => p.memberId === currentUser.id);
@@ -47,10 +52,23 @@ const ReadingPlanPage: React.FC = () => {
       if (participant) {
         setCurrentChapter(String(participant.currentChapter));
       }
-      const completed = plan.participants.filter(p => p.currentChapter >= plan.book.totalChapters).length;
-      setCompletedCount(completed);
+      const completedNum = plan.participants.filter(p => p.currentChapter >= plan.book.totalChapters).length;
+      setCompletedCount(completedNum);
     }
-    console.log('[ReadingPlan] 加载数据完成', { plan, upcoming, isJoined: !!plan?.participants.find(p => p.memberId === currentUser?.id) });
+    console.log('[ReadingPlan] 加载数据完成', { plan, upcoming, completed: completed.length });
+  };
+
+  const handleCompletePlan = () => {
+    if (!currentPlan) return;
+    const review = store.completeReadingPlan(currentPlan.id, completeSummary || undefined);
+    setShowCompleteModal(false);
+    setCompleteSummary('');
+    loadData();
+    Taro.showToast({
+      title: '结营成功',
+      icon: 'success'
+    });
+    console.log('[ReadingPlan] 结营成功', { planId: currentPlan.id, reviewId: review.id });
   };
 
   const handleJoin = () => {
@@ -279,10 +297,49 @@ const ReadingPlanPage: React.FC = () => {
           </View>
         )}
 
-        {currentUser?.isAdmin && (
+        {completedPlans.length > 0 && (
+          <View className={styles.upcomingSection}>
+            <View className={styles.upcomingHeader}>
+              <Text className={styles.upcomingIcon}>📚</Text>
+              <Text className={styles.upcomingTitle}>往期共读</Text>
+            </View>
+            {completedPlans.map(plan => (
+              <View key={plan.id}>
+                <View className={styles.upcomingBook}>
+                  <Image
+                    src={plan.book.cover}
+                    mode="aspectFill"
+                    className={styles.upcomingCover}
+                  />
+                  <View className={styles.upcomingInfo}>
+                    <Text className={styles.upcomingBookTitle}>{plan.book.title}</Text>
+                    <Text className={styles.upcomingBookAuthor}>{plan.book.author}</Text>
+                    <Text style={{ fontSize: '20rpx', color: '#8D6E63', marginTop: '4rpx' }}>
+                      {plan.participants.length}人参与 · {plan.participants.filter(p => p.currentChapter >= plan.book.totalChapters).length}人完成
+                    </Text>
+                  </View>
+                  <View style={{ padding: '4rpx 16rpx', background: 'rgba(158, 158, 158, 0.1)', color: '#9E9E9E', borderRadius: '16rpx', fontSize: '22rpx' }}>
+                    已结营
+                  </View>
+                </View>
+              </View>
+            ))}
+          </View>
+        )}
+
+        {currentUser?.isAdmin && currentPlan && currentPlan.status !== 'completed' && (
           <View className={styles.adminSection}>
             <Button className={styles.publishButton} onClick={handlePublish}>
               + 发布下月共读书籍
+            </Button>
+            <Button
+              className={styles.completeButton}
+              onClick={() => {
+                setCompleteSummary('');
+                setShowCompleteModal(true);
+              }}
+            >
+              ✓ 结束本期并结营
             </Button>
           </View>
         )}
@@ -305,6 +362,34 @@ const ReadingPlanPage: React.FC = () => {
               </Button>
               <Button className={styles.modalConfirmBtn} onClick={handleUpdateProgress}>
                 确认
+              </Button>
+            </View>
+          </View>
+        </View>
+      )}
+
+      {showCompleteModal && currentPlan && (
+        <View className={styles.modalOverlay} onClick={() => setShowCompleteModal(false)}>
+          <View className={styles.modalContent} onClick={e => e.stopPropagation()}>
+            <Text className={styles.modalTitle}>确认结营</Text>
+            <Text style={{ fontSize: '26rpx', color: '#666', marginBottom: '24rpx', lineHeight: '1.6' }}>
+              结营后将生成活动回顾，包括完成名单、讨论摘要等。本期共读将移至"往期共读"。
+            </Text>
+            <Text style={{ fontSize: '24rpx', color: '#8D6E63', marginBottom: '12rpx' }}>
+              结营寄语（可选）
+            </Text>
+            <Input
+              className={styles.modalInput}
+              placeholder="写几句结营寄语吧..."
+              value={completeSummary}
+              onInput={e => setCompleteSummary(e.detail.value)}
+            />
+            <View className={styles.modalButtons}>
+              <Button className={styles.modalCancelBtn} onClick={() => setShowCompleteModal(false)}>
+                取消
+              </Button>
+              <Button className={styles.modalConfirmBtn} onClick={handleCompletePlan}>
+                确认结营
               </Button>
             </View>
           </View>

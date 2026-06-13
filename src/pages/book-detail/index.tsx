@@ -12,7 +12,8 @@ const BookDetailPage: React.FC = () => {
   const [memberBook, setMemberBook] = useState<MemberBook | null>(null);
   const [book, setBook] = useState<Book | null>(null);
   const [myRating, setMyRating] = useState(0);
-  const [otherCopies, setOtherCopies] = useState<MemberBook[]>([]);
+  const [availableCopies, setAvailableCopies] = useState<MemberBook[]>([]);
+  const [activeBorrows, setActiveBorrows] = useState<any[]>([]);
 
   useDidShow(() => {
     const id = router.params.id;
@@ -28,12 +29,15 @@ const BookDetailPage: React.FC = () => {
       setBook(mb.book);
       setMyRating(store.getMyRating(mb.bookId));
 
-      const copies = store.memberBooks.filter(
-        item => item.bookId === mb.bookId && item.id !== id && item.isAvailable
+      const copies = store.getMemberBooksByBookId(mb.bookId).filter(
+        item => item.isAvailable
       );
-      setOtherCopies(copies);
+      setAvailableCopies(copies);
 
-      console.log('[BookDetail] 加载书籍详情', { bookId: mb.bookId, title: mb.book.title });
+      const borrows = store.getActiveBorrowsByBookId(mb.bookId);
+      setActiveBorrows(borrows);
+
+      console.log('[BookDetail] 加载书籍详情', { bookId: mb.bookId, title: mb.book.title, available: copies.length, borrowed: borrows.length });
     }
   };
 
@@ -153,20 +157,20 @@ const BookDetailPage: React.FC = () => {
           </Text>
           <View className={styles.infoGrid}>
             <View className={styles.infoItem}>
-              <Text className={styles.infoValue}>{book.totalChapters}</Text>
-              <Text className={styles.infoLabel}>总章节</Text>
+              <Text className={styles.infoValue}>{availableCopies.length + activeBorrows.length}</Text>
+              <Text className={styles.infoLabel}>馆藏总数</Text>
+            </View>
+            <View className={styles.infoItem}>
+              <Text className={styles.infoValue} style={{ color: '#4CAF50' }}>{availableCopies.length}</Text>
+              <Text className={styles.infoLabel}>可借</Text>
+            </View>
+            <View className={styles.infoItem}>
+              <Text className={styles.infoValue} style={{ color: '#FF9800' }}>{activeBorrows.length}</Text>
+              <Text className={styles.infoLabel}>在借</Text>
             </View>
             <View className={styles.infoItem}>
               <Text className={styles.infoValue}>{book.rating}</Text>
-              <Text className={styles.infoLabel}>平均评分</Text>
-            </View>
-            <View className={styles.infoItem}>
-              <Text className={styles.infoValue}>{book.ratingCount}</Text>
-              <Text className={styles.infoLabel}>评价人数</Text>
-            </View>
-            <View className={styles.infoItem}>
-              <Text className={styles.infoValue}>{otherCopies.length + 1}</Text>
-              <Text className={styles.infoLabel}>馆藏数量</Text>
+              <Text className={styles.infoLabel}>评分</Text>
             </View>
           </View>
         </View>
@@ -215,14 +219,14 @@ const BookDetailPage: React.FC = () => {
           {renderStars(myRating, true)}
         </View>
 
-        {otherCopies.length > 0 && (
+        {availableCopies.length > 0 && (
           <View className={styles.card}>
             <Text className={styles.sectionTitle}>
               <Text className={styles.sectionIcon}>📚</Text>
-              其他可借副本 ({otherCopies.length})
+              可借副本 ({availableCopies.length})
             </Text>
             <View className={styles.otherCopies}>
-              {otherCopies.map(copy => {
+              {availableCopies.map(copy => {
                 return (
                   <View
                     key={copy.id}
@@ -236,7 +240,40 @@ const BookDetailPage: React.FC = () => {
                         品相：{getConditionText(copy.condition)}
                       </Text>
                     </View>
-                    <Text style={{ color: '#8B5A2B', fontSize: 24 }}>查看 →</Text>
+                    <Text style={{ color: '#4CAF50', fontSize: 24 }}>可借 →</Text>
+                  </View>
+                );
+              })}
+            </View>
+          </View>
+        )}
+
+        {activeBorrows.length > 0 && (
+          <View className={styles.card}>
+            <Text className={styles.sectionTitle}>
+              <Text className={styles.sectionIcon}>📖</Text>
+              在借中 ({activeBorrows.length})
+            </Text>
+            <View className={styles.otherCopies}>
+              {activeBorrows.map(record => {
+                return (
+                  <View
+                    key={record.id}
+                    className={styles.copyItem}
+                    onClick={() => {
+                      Taro.navigateTo({
+                        url: `/pages/member-detail/index?id=${record.borrowerId}`
+                      });
+                    }}
+                  >
+                    <Image src={record.borrower.avatar} className={styles.copyAvatar} />
+                    <View className={styles.copyInfo}>
+                      <Text className={styles.copyName}>{record.borrower.name}</Text>
+                      <Text className={styles.copyMeta}>
+                        藏书人：{record.owner.name}
+                      </Text>
+                    </View>
+                    <Text style={{ color: '#FF9800', fontSize: 24 }}>在借</Text>
                   </View>
                 );
               })}
